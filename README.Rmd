@@ -3,8 +3,6 @@ title: "AUGglmmTMB"
 output: rmarkdown::github_document
 ---
 
-# AUGglmmTMB
-
 ## Overview
 
 `AUGglmmTMB` is an R package for the analysis of binomial mixed models in settings with sparse and clustered data. It provides methods for stable estimation in the presence of separation and boundary estimates of random effects covariance matrices.

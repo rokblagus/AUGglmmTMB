@@ -1,8 +1,6 @@
 AUGglmmTMB
 ================
 
-# AUGglmmTMB
-
 ## Overview
 
 `AUGglmmTMB` is an R package for the analysis of binomial mixed models
