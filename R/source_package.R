@@ -929,9 +929,16 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 
     p_hat<-predict(model,type="response")[1:length(Y)]
 
-    sum(  Y*log(p_hat)+(1-Y)*log(1-p_hat)  )
+    p1<-log(p_hat)
+    p2<-log(1-p_hat)
+
+    p1[p1<(-1e5)]<-(-1e5)
+    p2[p2<(-1e5)]<-(-1e5)
+
+    sum(  Y*p1+(1-Y)*p2  )
 
   }
+
 
 
 
@@ -1125,7 +1132,13 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,maxiter=50,tol
 
     p_hat<-predict(model,type="response")[1:length(Y)]
 
-    sum(  Y*log(p_hat)+(1-Y)*log(1-p_hat)  )
+    p1<-log(p_hat)
+    p2<-log(1-p_hat)
+
+    p1[p1<(-1e5)]<-(-1e5)
+    p2[p2<(-1e5)]<-(-1e5)
+
+    sum(  Y*p1+(1-Y)*p2  )
 
   }
 
@@ -1159,7 +1172,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,maxiter=50,tol
 
   lm<-1 #identity as the shrink target
   li<-ee$values+tau*(lm-ee$values)
-  psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q
+  if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
 
@@ -1180,7 +1193,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,maxiter=50,tol
 
   tau_finder_maxi<-function(tau){
     li<-ee$values+tau*(lm-ee$values)
-    psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q
+    if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
     fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
