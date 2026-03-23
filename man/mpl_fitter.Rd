@@ -38,7 +38,7 @@ lists of equal length.}
 
 \item{nu, psi}{Penalty parameters for the random effects. If \code{NULL},
 no random-effects penalty is applied and only the fixed-effects penalty is used.
-If provided, these can be vectors of the same length as \code{Z}, in which case
+If provided, these have to be lists, that can be of the same length as \code{Z}, in which case
 the penalty is applied to all random effects. If shorter, the penalty is applied
 only to the first \code{length(nu)} random-effects terms.}
 
@@ -82,6 +82,8 @@ penalties on both fixed and random effects. Two algorithms are available:
 Algorithm 1 and Algorithm 2. The single-iteration estimator from Košuta et el. is obtained by specifying \code{fit_pGLM = TRUE,maxiter=1}.
 }
 \examples{
+\dontrun{
+
 
 data(birds)
 Y<-birds$parasites
@@ -125,7 +127,7 @@ fit_mpl1_2repen<-mpl_fitter(xdf,mv_multiplier(xdf),nu=list(3,1),psi=list(diag(1,
     save_coef=TRUE,inter_iter=1e3,use_previous=TRUE)
 summary(fit_mpl1_2repen$fit)
 fit_mpl1_2repen$coefs
-
+}
 }
 \seealso{
 \code{\link{get_psi}}, \code{\link{get_data_plot_cloglik}}

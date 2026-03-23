@@ -637,7 +637,7 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #'
 #' @param nu,psi Penalty parameters for the random effects. If \code{NULL},
 #' no random-effects penalty is applied and only the fixed-effects penalty is used.
-#' If provided, these can be vectors of the same length as \code{Z}, in which case
+#' If provided, these have to be lists, that can be of the same length as \code{Z}, in which case
 #' the penalty is applied to all random effects. If shorter, the penalty is applied
 #' only to the first \code{length(nu)} random-effects terms.
 #'
@@ -679,6 +679,8 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #' @seealso \code{\link{get_psi}}, \code{\link{get_data_plot_cloglik}}
 #'
 #' @examples
+#' \dontrun{
+#'
 #'
 #' data(birds)
 #' Y<-birds$parasites
@@ -722,7 +724,7 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #'     save_coef=TRUE,inter_iter=1e3,use_previous=TRUE)
 #' summary(fit_mpl1_2repen$fit)
 #' fit_mpl1_2repen$coefs
-#'
+#' }
 #' @export
 
 
@@ -735,7 +737,7 @@ mpl_fitter<-function(data,cfe,nu,psi,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun
   if (is.null(data$Z)) stop("data must be a list, element Z is missing")
   if (is.null(data$W)) stop("data must be a list, element W is missing")
   if (is.null(data$grouping)) stop("data must be a list, element grouping is missing")
-
+if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.")
   formula_fit<-make_formula(data)
   data<-restructure_data(data)
   flag=TRUE
@@ -961,7 +963,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 
   lm<-1 #identity as the shrink target
   li<-ee$values+tau*(lm-ee$values)
-  psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q
+  if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
 
@@ -982,7 +984,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 
   tau_finder_maxi<-function(tau){
     li<-ee$values+tau*(lm-ee$values)
-    psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q
+    if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
     fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
@@ -992,7 +994,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 
   tau_finder<-function(tau){
     li<-ee$values+tau*(lm-ee$values)
-    psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q
+    if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
     fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
@@ -1025,7 +1027,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
   tau1<-opt_tau
 
   li<-ee$values+opt_tau*(lm-ee$values)
-  psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q
+  if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
   list(tau=tau1,psi=psi0)
 
