@@ -33,7 +33,7 @@ These issues lead to unstable estimation and invalid inference. `AUGglmmTMB` pro
 
 - `get_psi()`: estimates penalty parameters for the random-effects covariance structure using an iterative procedure consistent with the penalized likelihood framework.
 
-- `get_data_plot_cloglik()`: evaluates the conditional log-likelihood over a grid of shrinkage parameters for the random-effects covariance matrix, enabling data-driven selection of the penalty strength.
+- `get_data_plot_cloglik()`: evaluates the conditional log-likelihood over a grid of shrinkage parameters for the random-effects covariance matrix, supporting data-driven selection of the penalty strength obtained using `get_psi()`.
 
 ## Installation
 

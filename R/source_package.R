@@ -194,11 +194,36 @@ restructure_data<-function(data){
 make_pd_fix<-function(data,cfe,fix_beta,link_fun){
 
   get_mu <- switch(link_fun,
-                   logit = function(x) plogis(x),
-                   probit = function(x) pnorm(x),
-                   cloglog = function(x) 1 - exp(-exp(x)),
-                   cauchit = function(x) atan(x)/pi+0.5,
-                   loglog = function(x) exp(-exp(-x)),
+                   logit = function(x) {
+                     pn<-plogis(x)
+                     pn[pn<1e-12]<-1e-12
+                     pn[pn>(1-1e-12)]<-1-1e-12
+                     pn
+                     },
+                   probit = function(x) {
+                     pn<-pnorm(x)
+                     pn[pn<1e-12]<-1e-12
+                     pn[pn>(1-1e-12)]<-1-1e-12
+                     pn
+                     },
+                   cloglog = function(x) {
+                     pn<-1 - exp(-exp(x))
+                     pn[pn<1e-12]<-1e-12
+                     pn[pn>(1-1e-12)]<-1-1e-12
+                     pn
+                     },
+                   cauchit = function(x) {
+                     pn<-atan(x)/pi+0.5
+                     pn[pn<1e-12]<-1e-12
+                     pn[pn>(1-1e-12)]<-1-1e-12
+                     pn
+                     },
+                   loglog = function(x) {
+                     pn<-exp(-exp(-x))
+                     pn[pn<1e-12]<-1e-12
+                     pn[pn>(1-1e-12)]<-1-1e-12
+                     pn
+                     },
                    stop("Unsupported link function")
   )
 
@@ -207,7 +232,11 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
                       mu <- plogis(x)
                     mu*(1-mu)},
                     probit = function(x) {
-                      dnorm(x)**2/(pnorm(x)*(1-pnorm(x)))
+                      pn<-pnorm(x)
+                      pn[pn<1e-12]<-1e-12
+                      pn[pn>(1-1e-12)]<-1-1e-12
+
+                      dnorm(x)**2/(pn*(1-pn))
                     },
                     cloglog = function(x) {
                       exp(2*x)/(exp(exp(x))-1)
@@ -229,6 +258,7 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
 
                              probit = function(x) {
                                phi <- dnorm(x)
+                               phi[phi<1e-12]<-1e-12
                                Phi <- pnorm(x)
                                -(x * Phi * (1 - Phi)) / phi
                              },
@@ -271,13 +301,23 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
 
   W<-c(data$W,hi*cfe/data$M,hi*cfe/data$M)
 
+  dp<-data$M*get_d_primeomega(lp)+2*get_mu(lp)-1
+  #y1<-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
+  #y2<-data$M-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
+  y1<-data$Y+dp
+  y2<-data$M-data$Y+dp
 
-  y1<-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
-  y2<-data$M-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
+  #ksi<-function(x){ #x is lp!
+  #  p1<--data$M*(get_d_primeomega(x)+2*get_mu(x)-1)/get_mu(x)
+  #  p2<-data$M*(get_d_primeomega(x)+2*get_mu(x)-1)/(1-get_mu(x))
+  #  pp<-cbind(p1,p2)
 
+   # apply(pp,1,max)
+
+  #}
   ksi<-function(x){ #x is lp!
-    p1<--data$M*(get_d_primeomega(x)+2*get_mu(x)-1)/get_mu(x)
-    p2<-data$M*(get_d_primeomega(x)+2*get_mu(x)-1)/(1-get_mu(x))
+    p1<--dp/get_mu(x)
+    p2<-dp/(1-get_mu(x))
     pp<-cbind(p1,p2)
 
     apply(pp,1,max)

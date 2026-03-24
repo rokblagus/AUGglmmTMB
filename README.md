@@ -51,7 +51,8 @@ a unified framework.
 
 - `get_data_plot_cloglik()`: evaluates the conditional log-likelihood
   over a grid of shrinkage parameters for the random-effects covariance
-  matrix, enabling data-driven selection of the penalty strength.
+  matrix, supporting data-driven selection of the penalty strength
+  obtained using `get_psi()`.
 
 ## Installation
 
