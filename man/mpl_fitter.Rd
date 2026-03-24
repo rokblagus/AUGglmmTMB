@@ -22,8 +22,8 @@ mpl_fitter(
 \item{data}{A list containing the model data with elements:
 \describe{
   \item{Y}{Response vector.}
-  \item{M}{Number of trials.}
-  \item{W}{Likelihood, frequency or precision weights.}
+  \item{M}{Number of trials. Can be missing in which case it is internally set to 1 for all observations.}
+  \item{W}{Likelihood, frequency or precision weights. Can be missing in which case it is internally set to 1 for all observations.}
   \item{X}{Design matrix for fixed effects.}
   \item{Z}{Random-effects design matrix or a list of matrices for multiple
   random-effects terms.}

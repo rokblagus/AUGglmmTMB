@@ -25,15 +25,15 @@
 #' Computes the penalty strength for the fixed effects as suggested by Košuta et al.
 #'
 #' @param data A list containing the model data. Must include the element
-#' \code{M} for the number of trials and  \code{W} for the weights.
+#' \code{X} for the fixed effects design matrix. Optionally it also includes \code{M} for the number of trials and  \code{W} for the weights; if missing they are set to 1 internally for all observations.
 #'
 #' @return A numeric value equal to \eqn{\sqrt{p/n}}, where \eqn{p} is the number
-#' of fixed-effect parameters and \eqn{n} is the sample size.
+#' of fixed-effect parameters and \eqn{n} is the effective sample size.
 #'
 #' @details
 #' The penalty strength is defined as \eqn{\sqrt{p/n}}, following the recommendation
 #' of Košuta et al., where \eqn{p} is the number of columns of \code{X} and \eqn{n}
-#' is the number of observations.
+#' is the effective sample size.
 #'
 #' @examples
 #' data(birds)
@@ -53,7 +53,11 @@
 
 
 mv_multiplier <- function(data) {
-  if (is.null(data$M)|is.null(data$W)) stop("The suplied data are not in correct format.")
+  if (is.null(data$X)) stop("The suplied data are not in correct format, X is missing.")
+ # if (is.null(data$M)|is.null(data$W)) stop("The suplied data are not in correct format.")
+  if (is.null(data$M)) data$M<-rep(1,nrow(data$X))
+  if (is.null(data$W)) data$W<-rep(1,nrow(data$X))
+
   n <- sum(data$M*data$W)
   p <- ncol(data$X)
   return( sqrt(p / n))
@@ -621,8 +625,8 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #' @param data A list containing the model data with elements:
 #' \describe{
 #'   \item{Y}{Response vector.}
-#'   \item{M}{Number of trials.}
-#'   \item{W}{Likelihood, frequency or precision weights.}
+#'   \item{M}{Number of trials. Can be missing in which case it is internally set to 1 for all observations.}
+#'   \item{W}{Likelihood, frequency or precision weights. Can be missing in which case it is internally set to 1 for all observations.}
 #'   \item{X}{Design matrix for fixed effects.}
 #'   \item{Z}{Random-effects design matrix or a list of matrices for multiple
 #'   random-effects terms.}
@@ -732,10 +736,10 @@ mpl_fitter<-function(data,cfe,nu,psi,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun
   if (link_fun=="cauchit") stop("Cauchit link is currently not supported by glmmTMB")
   if (link_fun=="loglog") stop("Loglog link is currently not supported by glmmTMB")
   if (is.null(data$Y)) stop("data must be a list, element Y is missing")
-  if (is.null(data$M)) stop("data must be a list, element M is missing")
+  if (is.null(data$M)) data$M<-rep(1,length(data$Y)) #stop("data must be a list, element M is missing")
   if (is.null(data$X)) stop("data must be a list, element X is missing")
   if (is.null(data$Z)) stop("data must be a list, element Z is missing")
-  if (is.null(data$W)) stop("data must be a list, element W is missing")
+  if (is.null(data$W)) data$W<-rep(1,length(data$Y)) #stop("data must be a list, element W is missing")
   if (is.null(data$grouping)) stop("data must be a list, element grouping is missing")
 if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.")
   formula_fit<-make_formula(data)

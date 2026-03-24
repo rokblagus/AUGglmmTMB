@@ -8,11 +8,11 @@ mv_multiplier(data)
 }
 \arguments{
 \item{data}{A list containing the model data. Must include the element
-\code{M} for the number of trials and  \code{W} for the weights.}
+\code{X} for the fixed effects design matrix. Optionally it also includes \code{M} for the number of trials and  \code{W} for the weights; if missing they are set to 1 internally for all observations.}
 }
 \value{
 A numeric value equal to \eqn{\sqrt{p/n}}, where \eqn{p} is the number
-of fixed-effect parameters and \eqn{n} is the sample size.
+of fixed-effect parameters and \eqn{n} is the effective sample size.
 }
 \description{
 Computes the penalty strength for the fixed effects as suggested by Košuta et al.
@@ -20,7 +20,7 @@ Computes the penalty strength for the fixed effects as suggested by Košuta et a
 \details{
 The penalty strength is defined as \eqn{\sqrt{p/n}}, following the recommendation
 of Košuta et al., where \eqn{p} is the number of columns of \code{X} and \eqn{n}
-is the number of observations.
+is the effective sample size.
 }
 \examples{
 data(birds)
