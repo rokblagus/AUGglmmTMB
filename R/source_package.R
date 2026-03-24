@@ -872,7 +872,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 
       xdfa<-make_pd_re(data,nu,psi,link_fun)
 
-      gmm.fit2<-glmmTMB(gmm.fit$call$formula,data=xdfa,family="binomial",
+      gmm.fit2<-glmmTMB(gmm.fit$call$formula,data=xdfa,family=binomial(link=link_fun),
                         start=list(beta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"beta"],theta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"theta"]),
                         control = glmmTMBControl(optCtrl = list(iter.max=0, eval.max=0),rank_check ="skip",conv_check="skip")
       )
@@ -885,7 +885,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 
 
     #refit to orig data only
-    gmm.fit3<-glmmTMB(gmm.fit$call$formula,data=data,family="binomial",
+    gmm.fit3<-glmmTMB(gmm.fit$call$formula,data=data,family=binomial(link=link_fun),
                       start=list(beta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"beta"],theta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"theta"]),
                       control = glmmTMBControl(optCtrl = list(iter.max=0, eval.max=0),rank_check ="skip",conv_check="skip")
     )
