@@ -29,6 +29,8 @@ These issues lead to unstable estimation and invalid inference. `AUGglmmTMB` pro
 
 ## Key Functions
 
+- `AUGglmmTMB()`: fits penalized binomial mixed models using iterative algorithms based on Košuta et al. The function supports penalties on both fixed and random effects and provides stable estimation in the presence of separation and boundary estimates.
+
 - `mpl_fitter()`: fits penalized binomial mixed models using iterative algorithms based on Košuta et al. The function supports penalties on both fixed and random effects and provides stable estimation in the presence of separation and boundary estimates.
 
 - `get_psi()`: estimates penalty parameters for the random-effects covariance structure using an iterative procedure consistent with the penalized likelihood framework.

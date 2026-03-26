@@ -40,6 +40,11 @@ a unified framework.
 
 ## Key Functions
 
+- `AUGglmmTMB()`: fits penalized binomial mixed models using iterative
+  algorithms based on Košuta et al. The function supports penalties on
+  both fixed and random effects and provides stable estimation in the
+  presence of separation and boundary estimates.
+
 - `mpl_fitter()`: fits penalized binomial mixed models using iterative
   algorithms based on Košuta et al. The function supports penalties on
   both fixed and random effects and provides stable estimation in the

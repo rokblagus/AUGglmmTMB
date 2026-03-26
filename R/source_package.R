@@ -300,8 +300,9 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
   hi<-diag(H)
 
   W<-c(data$W,hi*cfe/data$M,hi*cfe/data$M)
-
-  dp<-data$M*get_d_primeomega(lp)+2*get_mu(lp)-1
+mud<-get_mu(lp)
+  #dp<-data$M*get_d_primeomega(lp)+2*get_mu(lp)-1
+  dp<-data$M*get_d_primeomega(lp)+2*mud-1
   #y1<-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
   #y2<-data$M-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
   y1<-data$Y+dp
@@ -315,21 +316,25 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
    # apply(pp,1,max)
 
   #}
-  ksi<-function(x){ #x is lp!
-    p1<--dp/get_mu(x)
-    p2<-dp/(1-get_mu(x))
+  #ksi<-function(x){ #x is lp!
+   # p1<--dp/get_mu(x)
+  #  p2<-dp/(1-get_mu(x))
+    p1<--dp/mud
+    p2<-dp/(1-mud)
     pp<-cbind(p1,p2)
 
-    apply(pp,1,max)
+   ksid<- apply(pp,1,max)
 
-  }
+  #}
 
-  y1<-y1+ksi(lp)*get_mu(lp)
+  #y1<-y1+ksi(lp)*get_mu(lp)
+  y1<-y1+ksid*mud
   y1[y1 < 0] <- 0
-  y2<-y2+ksi(lp)*get_mu(lp)
+  #y2<-y2+ksi(lp)*get_mu(lp)
+  y2<-y2+ksid*mud
   y2[y2 < 0] <- 0
-  m<-data$M+ksi(lp)
-
+  #m<-data$M+ksi(lp)
+  m<-data$M+ksid
 
   Y<-c(data$Y,y1,y2)
   M<-c(data$M,m,m)
@@ -1284,5 +1289,293 @@ seq_tau<-c(0,seq_tau)
 c_lik<-c(lik0,-c_lik)
 
 list(taus=seq_tau,cloglik=c_lik,se=lim)
+
+}
+
+
+
+#' Control options for AUGglmmTMB fitting
+#'
+#' Create a list of control parameters to customize the fitting behavior of
+#' \code{\link{AUGglmmTMB}}.
+#'
+#' @param fit_pGLM Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
+#'   in Košuta et al.). Default is \code{FALSE}.
+#' @param maxiter Integer. Maximum number of iterations for the penalized likelihood
+#'   fitting procedure. Default is 50.
+#' @param tol Numeric. Convergence tolerance based on changes in parameter estimates.
+#'   Default is 1e-6.
+#' @param save_coef Logical. If \code{TRUE}, stores coefficient estimates at each
+#'   iteration. Default is \code{FALSE}.
+#' @param inter_iter Integer. Number of internal iterations used by
+#'   \pkg{glmmTMB}. Default is 1000.
+#' @param use_previous Logical. If \code{TRUE}, uses estimates from the previous
+#'   iteration as starting values. Default is \code{FALSE}.
+#'
+#' @return A named list containing all specified control parameters.
+#'
+#' @examples
+#' ctrl <- AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 100, tol = 1e-5)
+#' str(ctrl)
+#'
+#' @export
+
+AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
+                              maxiter    = 50,
+                              tol        = 1e-6,
+                              save_coef  = FALSE,
+                              inter_iter = 1e3,
+                              use_previous = FALSE) {
+
+  namedList(fit_pGLM,maxiter,tol,save_coef,inter_iter,use_previous)
+}
+
+#' Create penalty options for AUGglmmTMB
+#'
+#' Constructs a list of penalty parameters to be used with \code{\link{AUGglmmTMB}}.
+#' This includes penalties for fixed effects and optional penalties for random effects.
+#'
+#' @param cfe Numeric. Strength of penalty on fixed effects. Default is \code{NULL},
+#'   in which case \code{AUGglmmTMB} computes it internally via \code{\link{mv_multiplier}}.
+#'   Setting \code{cfe = 0} disables the fixed-effects penalty.
+#' @param autrepen Logical. If \code{TRUE}, automatically estimates random-effects
+#'   penalty parameters (\eqn{\tau} and \eqn{\Psi}) when fitting the model, see \code{\link{get_psi}}. Default is \code{FALSE}.
+#' @param nu Optional numeric vector specifying random-effects penalty parameters. Default is \code{NULL}.
+#' @param psi Optional list of random-effects penalty matrices. Default is \code{NULL}.
+#'
+#' @return A named list with elements:
+#' \describe{
+#'   \item{cfe}{Numeric fixed-effects penalty.}
+#'   \item{autrepen}{Logical flag for automatic random-effects penalty estimation.}
+#'   \item{nu}{Numeric vector of random-effects penalty parameters.}
+#'   \item{psi}{List of random-effects penalty matrices.}
+#' }
+#'
+#' @details
+#' This function does not perform any fitting itself. It simply returns a structured list
+#' that specifies how \code{\link{AUGglmmTMB}} should apply penalties to fixed and random effects.
+#' Use this function to easily create the \code{penOpt} argument for \code{\link{AUGglmmTMB}}.
+#'
+#' @examples
+#' # Default penalties
+#' pen <- AUGglmmTMBPenalty()
+#'
+#' # Fixed-effects penalty of 0.5, automatic random-effects penalty
+#' pen2 <- AUGglmmTMBPenalty(cfe = 0.5, autrepen = TRUE)
+#'
+#' @export
+
+
+AUGglmmTMBPenalty<-function(cfe=NULL,
+                            autrepen=FALSE,
+                            nu=NULL,
+                            psi=NULL){
+
+  namedList(cfe,autrepen,nu,psi)
+}
+
+
+
+#' Fit a penalized binomial mixed model
+#'
+#' Fits a penalized binomial generalized linear mixed model with optional
+#' penalties on both fixed and random effects using the approach of Košuta et al.
+#'
+#' @param formula A \code{\link{formula}} object specifying the fixed and random
+#'   effects in standard R formula syntax. Random effects should be of the form
+#'   \code{(expr | factor)}.
+#' @param data A \code{data.frame} containing all variables used in \code{formula}.
+#' @param weights Optional. Column name, as in \code{\link{glmmTMB}} in \code{data} specifying
+#'   observation weights. Default is \code{NULL}, in which case all weights are 1.
+#' @param link Character. Link function to use for the binomial response. Default is
+#'   \code{"logit"}.
+#' @param penOpt List of penalty options, created by \code{\link{AUGglmmTMBPenalty}}:
+#'   \describe{
+#'     \item{cfe}{Numeric. Strength of penalty on fixed effects. If \code{NULL},
+#'       internally computed via \code{mv_multiplier()}. Setting \code{cfe = 0} disables fixed-effect penalty.}
+#'     \item{autrepen}{Logical. If \code{TRUE}, automatically estimates the random-effects
+#'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}).}
+#'     \item{nu}{Optional list specifying random-effects penalty parameters.}
+#'     \item{psi}{Optional list of random-effects penalty matrices.}
+#'   }
+#' @param control List of control parameters created via \code{\link{AUGglmmTMBControl}}.
+#'
+#' @return A list with elements:
+#' \describe{
+#'   \item{fit}{The fitted GLMM object, see also \code{\link{mpl_fitter}}.}
+#'   \item{optre}{List with elements \code{opt_tau} and \code{opt_psi} corresponding
+#'     to estimated random-effects penalty parameters if \code{autrepen = TRUE}, otherwise \code{NULL}.}
+#' }
+#'
+#' @details
+#' If \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
+#' If provided, \code{nu} and \code{psi} have to be lists, that can be of the same length as the number of specified random effects, in which case
+#' the penalty is applied to all random effects. If shorter, the penalty is applied
+#' only to the first \code{length(nu)} random-effects terms.
+#'
+#' @seealso \code{\link{AUGglmmTMBPenalty}},\code{\link{AUGglmmTMBControl}}, \code{\link{get_psi}}, \code{\link{mpl_fitter}}
+#'
+#' @examples
+#' \dontrun{
+#' data(birds)
+#' fit <- AUGglmmTMB(
+#'   cbind(parasites, 1 - parasites) ~ migration + (1 | species),
+#'   data = birds,
+#'   weights = NULL,
+#'   link = "logit",
+#'   penOpt = AUGglmmTMBPenalty(cfe = 1),
+#'   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
+#' )
+#' summary(fit$fit)
+#' }
+#'
+#' @export
+
+AUGglmmTMB<-function(formula,data,weights=NULL,link=NULL,
+                     penOpt=AUGglmmTMBPenalty(),
+                     control=AUGglmmTMBControl()){
+
+
+  data<-na.omit(data)
+  formula<-as.formula(formula)
+
+
+
+  if (is.null(link)) link_fun<-"logit" else link_fun<-link
+
+
+  fix_formula <- nobars(formula)
+
+
+
+
+  random_form <- findbars(formula)
+
+
+  re_list <- NULL
+  j=1
+  for(i in random_form){
+    random_parts <- i
+    bar <- random_parts[[1]]
+    lhs <- random_parts[[2]]
+    rhs <- random_parts[[3]]
+
+    if(length(as.character(rhs))>1) stop("Only random effects of type (REexpr1 | factor1) + (REexpr2 | factor2) + ... are supported. Expressions of type (REexpr | factor1:factor2) or (REexpr | factor1/factor2) are not supported.")
+
+    res <- list(expr=as.formula(paste0("~", deparse(lhs))),
+                gr=as.character(rhs))
+
+    re_list[[j]] <- res
+    j=j+1
+
+  }
+
+  rand_formula <- re_list
+
+
+
+  X <- model.matrix(fix_formula, data)
+
+  Z<-list()
+  grouping<-list()
+  for(i in 1:length(rand_formula)){
+    Z[[i]]<- model.matrix(rand_formula[[i]][[1]], data)
+    grouping[[i]]<- as.numeric(factor(data[, rand_formula[[i]][[2]]]))
+  }
+
+
+
+
+
+  # build model frame with weights evaluated in data
+
+
+
+
+  mf <- stats::model.frame(
+    fix_formula,
+    data = data)#,weights = weights)
+
+
+
+  # extract response as evaluated by model.frame
+  Yraw <- stats::model.response(mf)
+
+  # Case 1: matrix response (cbind)
+  if (is.matrix(Yraw)) {
+    if (ncol(Yraw) != 2) {
+      stop("cbind response must have exactly two columns")
+    }
+
+    Y <- Yraw[, 1]
+    M <- rowSums(Yraw)
+
+
+  } else {
+    Y <- Yraw
+    M <- rep(1, length(Y))
+
+
+  }
+
+  #if (is.null(weights)){
+  #  W <- rep(1, length(Y))
+  #} else {
+
+  #if (is.numeric(weights)){
+  #  if (length(weights)!=nrow(data)) stop("The specified weights are not correct length.") else W<-weights
+  #} else {
+  #  if (is.character(weights)) W<-data[,weights] else {
+  #    w_expr <- substitute(weights)
+  #    W <- eval(w_expr, envir = data, enclos = parent.frame())
+  #    }
+  #}
+  #}
+  #W<- model.weights(mf)
+  #if (is.null(W)) W <- rep(1, length(Y))
+  mc <- match.call()
+
+  # keep only the relevant arguments for model.frame
+  mf <- mc[c(1L, match(c("data", "weights"), names(mc), 0L))]
+  #mf$drop.unused.levels <- TRUE
+  mf[[1]] <- as.name("model.frame")  # replace function name with model.frame
+
+  # evaluate model.frame in the formula environment
+  #fr <- eval(mf, envir = environment(formula))
+  fr <- eval(mf, envir = parent.frame())
+  # number of observations
+  nobs <- nrow(fr)
+
+  # extract weights safely
+  W <- as.vector(model.weights(fr))
+  if (is.null(W)) W <- rep(1, nobs)
+
+  data_mpl<-namedList(Y,M,W,X,Z,grouping)
+
+  if (is.null(penOpt$cfe)) penOpt$cfe<-mv_multiplier(data_mpl)
+
+  if (penOpt$autrepen){
+    q<-ncol(data_mpl$Z[[1]])
+    psi_opt<-get_psi(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                     save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)
+
+    opt_tau<-psi_opt$tau
+    opt_psi<-psi_opt$psi
+
+    fit<-mpl_fitter(data=data_mpl,
+                    cfe=penOpt$cfe,nu=list(2*q-1),psi=list(opt_psi),
+                    fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                    save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)
+
+  } else {
+    opt_tau<-NULL
+    opt_psi<-NULL
+    fit<-mpl_fitter(data=data_mpl,
+                    cfe=penOpt$cfe,nu=penOpt$nu,psi=penOpt$psi,
+                    fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                    save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)
+  }
+
+  list(fit=fit,optre=list(opt_tau,opt_psi))
 
 }

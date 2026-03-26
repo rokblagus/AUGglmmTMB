@@ -10,7 +10,8 @@ License: GPL-3
 Encoding: UTF-8
 Imports:
   brglm2,
-  glmmTMB
+  glmmTMB,
+  lme4
 RoxygenNote: 7.3.2
 Depends: 
     R (>= 3.5)
