@@ -23,7 +23,7 @@ A named list with elements:
 \describe{
   \item{cfe}{Numeric fixed-effects penalty.}
   \item{autrepen}{Logical flag for automatic random-effects penalty estimation.}
-  \item{nu}{Numeric vector of random-effects penalty parameters.}
+  \item{nu}{List of random-effects penalty parameters.}
   \item{psi}{List of random-effects penalty matrices.}
 }
 }

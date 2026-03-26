@@ -1347,7 +1347,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' \describe{
 #'   \item{cfe}{Numeric fixed-effects penalty.}
 #'   \item{autrepen}{Logical flag for automatic random-effects penalty estimation.}
-#'   \item{nu}{Numeric vector of random-effects penalty parameters.}
+#'   \item{nu}{List of random-effects penalty parameters.}
 #'   \item{psi}{List of random-effects penalty matrices.}
 #' }
 #'
@@ -1576,6 +1576,6 @@ AUGglmmTMB<-function(formula,data,weights=NULL,link=NULL,
                     save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)
   }
 
-  list(fit=fit,optre=list(opt_tau,opt_psi))
+  list(fit=fit,optre=list(tau=opt_tau,psi=opt_psi))
 
 }
