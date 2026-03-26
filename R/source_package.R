@@ -1342,6 +1342,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #'   penalty parameters (\eqn{\tau} and \eqn{\Psi}) when fitting the model, see \code{\link{get_psi}}. Default is \code{FALSE}.
 #' @param nu Optional numeric vector specifying random-effects penalty parameters. Default is \code{NULL}.
 #' @param psi Optional list of random-effects penalty matrices. Default is \code{NULL}.
+#' @param plot Logical flag for plotting the conditional likelihood; only applies when \code{autrepen=TRUE}. Default is \code{FALSE}.
 #'
 #' @return A named list with elements:
 #' \describe{
@@ -1349,6 +1350,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #'   \item{autrepen}{Logical flag for automatic random-effects penalty estimation.}
 #'   \item{nu}{List of random-effects penalty parameters.}
 #'   \item{psi}{List of random-effects penalty matrices.}
+#'   \item{plot}{Logical flag for plotting the conditional likelihood.}
 #' }
 #'
 #' @details
@@ -1369,9 +1371,10 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 AUGglmmTMBPenalty<-function(cfe=NULL,
                             autrepen=FALSE,
                             nu=NULL,
-                            psi=NULL){
+                            psi=NULL,
+                            plot=FALSE){
 
-  namedList(cfe,autrepen,nu,psi)
+  namedList(cfe,autrepen,nu,psi,plot)
 }
 
 
@@ -1556,24 +1559,34 @@ AUGglmmTMB<-function(formula,data,weights=NULL,link=NULL,
 
   if (penOpt$autrepen){
     q<-ncol(data_mpl$Z[[1]])
-    psi_opt<-get_psi(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
-                     save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)
+    psi_opt<-suppressMessages(suppressWarnings(get_psi(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,
+                                                       tol=control$tol,link_fun=link_fun,
+                     save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 
     opt_tau<-psi_opt$tau
     opt_psi<-psi_opt$psi
 
-    fit<-mpl_fitter(data=data_mpl,
+    fit<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
                     cfe=penOpt$cfe,nu=list(2*q-1),psi=list(opt_psi),
                     fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
-                    save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)
+                    save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
+if (penOpt$plot){
+  psi_taus<-suppressMessages(suppressWarnings(get_data_plot_cloglik(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),n_taus=10,fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,
+                                  tol=control$tol,link_fun=link_fun,save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 
+  plot(psi_taus$taus,psi_taus$cloglik,type="l",xlab="tau",ylab="conditional log-likelihood")
+  if (psi_taus$cloglik[1]<psi_taus$cloglik[2])  lm<-psi_taus$cloglik[1]+psi_taus$se else psi_taus$cloglik[1]-psi_taus$se
+  abline(h=lm,lty=3,col="red")
+   abline(v=psi_opt$tau,lty=3,col="blue")
+
+}
   } else {
     opt_tau<-NULL
     opt_psi<-NULL
-    fit<-mpl_fitter(data=data_mpl,
+    fit<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
                     cfe=penOpt$cfe,nu=penOpt$nu,psi=penOpt$psi,
                     fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
-                    save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)
+                    save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
   }
 
   list(fit=fit,optre=list(tau=opt_tau,psi=opt_psi))

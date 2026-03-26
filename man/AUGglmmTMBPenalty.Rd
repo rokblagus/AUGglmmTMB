@@ -4,7 +4,13 @@
 \alias{AUGglmmTMBPenalty}
 \title{Create penalty options for AUGglmmTMB}
 \usage{
-AUGglmmTMBPenalty(cfe = NULL, autrepen = FALSE, nu = NULL, psi = NULL)
+AUGglmmTMBPenalty(
+  cfe = NULL,
+  autrepen = FALSE,
+  nu = NULL,
+  psi = NULL,
+  plot = FALSE
+)
 }
 \arguments{
 \item{cfe}{Numeric. Strength of penalty on fixed effects. Default is \code{NULL},
@@ -17,6 +23,8 @@ penalty parameters (\eqn{\tau} and \eqn{\Psi}) when fitting the model, see \code
 \item{nu}{Optional numeric vector specifying random-effects penalty parameters. Default is \code{NULL}.}
 
 \item{psi}{Optional list of random-effects penalty matrices. Default is \code{NULL}.}
+
+\item{plot}{Logical flag for plotting the conditional likelihood; only applies when \code{autrepen=TRUE}. Default is \code{FALSE}.}
 }
 \value{
 A named list with elements:
@@ -25,6 +33,7 @@ A named list with elements:
   \item{autrepen}{Logical flag for automatic random-effects penalty estimation.}
   \item{nu}{List of random-effects penalty parameters.}
   \item{psi}{List of random-effects penalty matrices.}
+  \item{plot}{Logical flag for plotting the conditional likelihood.}
 }
 }
 \description{
