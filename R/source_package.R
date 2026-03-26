@@ -1394,15 +1394,15 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'     \item{cfe}{Numeric. Strength of penalty on fixed effects. If \code{NULL},
 #'       internally computed via \code{mv_multiplier()}. Setting \code{cfe = 0} disables fixed-effect penalty.}
 #'     \item{autrepen}{Logical. If \code{TRUE}, automatically estimates the random-effects
-#'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}).}
-#'     \item{nu}{Optional list specifying random-effects penalty parameters.}
-#'     \item{psi}{Optional list of random-effects penalty matrices.}
+#'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}); the penalty is only applied to the 1st random effect.}
+#'     \item{nu}{Optional list specifying random-effects penalty parameters. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects.}
+#'     \item{psi}{Optional list of random-effects penalty matrices; need to be of the same length as \code{nu}.}
 #'   }
 #' @param control List of control parameters created via \code{\link{AUGglmmTMBControl}}.
 #'
 #' @return A list with elements:
 #' \describe{
-#'   \item{fit}{The fitted GLMM object, see also \code{\link{mpl_fitter}}.}
+#'   \item{fit}{The fitted penalized GLMM object, see also \code{\link{mpl_fitter}}.}
 #'   \item{optre}{List with elements \code{opt_tau} and \code{opt_psi} corresponding
 #'     to estimated random-effects penalty parameters if \code{autrepen = TRUE}, otherwise \code{NULL}.}
 #' }
