@@ -798,6 +798,8 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
     #firth<-my_pen_glm(data2,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FALSE)
 
     beta_fix<-firth$coefficients
+   # beta_fix[beta_fix>1e5]<-1e5
+  #  beta_fix[beta_fix<(-1e5)]<--1e5
     if (save_coef) {if (ii==1) coefs_glm<-beta_fix else coefs_glm<-rbind(coefs_glm,beta_fix)}
   } else {
 
@@ -816,20 +818,44 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
   xdf$M<-xdf$M*xdf$W
 
 
- if (use_previous){
-  if (ii==1){
-    gmm.fit<-glmmTMB(formula_fit, data = xdf, family = binomial(link=link_fun),control=glmmTMBControl(optCtrl=list(iter.max=inter_iter,eval.max=inter_iter),profile = FALSE,collect = FALSE), se = FALSE, verbose = FALSE, doFit = TRUE, REML = FALSE)
-  } else {
-    gmm.fit<-glmmTMB(formula_fit, data = xdf,
-                     start=list(beta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"beta"],theta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"theta"]),
-                     family = binomial(link=link_fun),control=glmmTMBControl(optCtrl=list(iter.max=inter_iter,eval.max=inter_iter),profile = FALSE,collect = FALSE), se = FALSE, verbose = FALSE, doFit = TRUE, REML = FALSE)
+ #if (use_previous){
+#  if (ii==1){
+ #   gmm.fit<-glmmTMB(formula_fit, data = xdf, family = binomial(link=link_fun),control=glmmTMBControl(optCtrl=list(iter.max=inter_iter,eval.max=inter_iter),profile = FALSE,collect = FALSE), se = FALSE, verbose = FALSE, doFit = TRUE, REML = FALSE)
+#  } else {
+ #   gmm.fit<-glmmTMB(formula_fit, data = xdf,
+  #                   start=list(beta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"beta"],theta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"theta"]),
+   #                  family = binomial(link=link_fun),control=glmmTMBControl(optCtrl=list(iter.max=inter_iter,eval.max=inter_iter),profile = FALSE,collect = FALSE), se = FALSE, verbose = FALSE, doFit = TRUE, REML = FALSE)
 
+  #}
+ #} else {
+#   gmm.fit<-glmmTMB(formula_fit, data = xdf, family = binomial(link=link_fun),control=glmmTMBControl(optCtrl=list(iter.max=inter_iter,eval.max=inter_iter),profile = FALSE,collect = FALSE), se = FALSE, verbose = FALSE, doFit = TRUE, REML = FALSE)
+
+ #}
+
+  start_list <- NULL
+  if (use_previous && ii > 1) {
+    start_list <- list(
+      beta  = gmm.fit$fit$par[names(gmm.fit$fit$par) %in% "beta"],
+      theta = gmm.fit$fit$par[names(gmm.fit$fit$par) %in% "theta"]
+    )
   }
- } else {
-   gmm.fit<-glmmTMB(formula_fit, data = xdf, family = binomial(link=link_fun),control=glmmTMBControl(optCtrl=list(iter.max=inter_iter,eval.max=inter_iter),profile = FALSE,collect = FALSE), se = FALSE, verbose = FALSE, doFit = TRUE, REML = FALSE)
 
- }
-
+  # Fit the model
+  gmm.fit <- glmmTMB(
+    formula_fit,
+    data = xdf,
+    family = binomial(link = link_fun),
+    start = start_list,
+    control = glmmTMBControl(
+      optCtrl = list(iter.max = inter_iter, eval.max = inter_iter),
+      profile = FALSE,
+      collect = FALSE
+    ),
+    se = FALSE,
+    verbose = FALSE,
+    doFit = TRUE,
+    REML = FALSE
+  )
 
 
 
