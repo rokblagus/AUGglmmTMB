@@ -9,7 +9,8 @@ AUGglmmTMBPenalty(
   autrepen = FALSE,
   nu = NULL,
   psi = NULL,
-  plot = FALSE
+  plot = FALSE,
+  ntaus = 50
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ penalty parameters (\eqn{\tau} and \eqn{\Psi}) when fitting the model, see \code
 \item{psi}{Optional list of random-effects penalty matrices. Default is \code{NULL}.}
 
 \item{plot}{Logical flag for plotting the conditional likelihood; only applies when \code{autrepen=TRUE}. Default is \code{FALSE}.}
+
+\item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood; only applies when \code{plot=TRUE}. Default is \code{50}.}
 }
 \value{
 A named list with elements:
@@ -34,6 +37,7 @@ A named list with elements:
   \item{nu}{List of random-effects penalty parameters.}
   \item{psi}{List of random-effects penalty matrices.}
   \item{plot}{Logical flag for plotting the conditional likelihood.}
+  \item{ntaus}{Numeric number of different values of \eqn{\tau} to be used when plotting the conditional likelihood.}
 }
 }
 \description{

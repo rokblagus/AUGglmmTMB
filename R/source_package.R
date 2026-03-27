@@ -264,11 +264,12 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
                              },
 
                              cloglog = function(x) {
-                               ((1 - exp(x)) * exp(x - exp(x)) * (exp(exp(x)) - 1)) / exp(2 * x)
-                             },
+                              # ((1 - exp(x)) * exp(x - exp(x)) * (exp(exp(x)) - 1)) / exp(2 * x)
+                             (1-exp(-exp(x)))*(1-exp(x))/exp(x)
+                               },
 
                              loglog = function(x) {
-                               ((-1 - exp(-x)) * exp(-x - exp(-x)) * (exp(exp(-x)) - 1)) / exp(-2 * x)
+                               (1-exp(-exp(-x)))*(exp(-x)-1)/exp(-x)
                              },
 
                              cauchit = function(x) {
@@ -1343,6 +1344,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' @param nu Optional numeric vector specifying random-effects penalty parameters. Default is \code{NULL}.
 #' @param psi Optional list of random-effects penalty matrices. Default is \code{NULL}.
 #' @param plot Logical flag for plotting the conditional likelihood; only applies when \code{autrepen=TRUE}. Default is \code{FALSE}.
+#' @param ntaus Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood; only applies when \code{plot=TRUE}. Default is \code{50}.
 #'
 #' @return A named list with elements:
 #' \describe{
@@ -1351,6 +1353,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #'   \item{nu}{List of random-effects penalty parameters.}
 #'   \item{psi}{List of random-effects penalty matrices.}
 #'   \item{plot}{Logical flag for plotting the conditional likelihood.}
+#'   \item{ntaus}{Numeric number of different values of \eqn{\tau} to be used when plotting the conditional likelihood.}
 #' }
 #'
 #' @details
@@ -1372,9 +1375,9 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
                             autrepen=FALSE,
                             nu=NULL,
                             psi=NULL,
-                            plot=FALSE){
+                            plot=FALSE,ntaus=50){
 
-  namedList(cfe,autrepen,nu,psi,plot)
+  namedList(cfe,autrepen,nu,psi,plot,ntaus)
 }
 
 
@@ -1571,7 +1574,7 @@ AUGglmmTMB<-function(formula,data,weights=NULL,link=NULL,
                     fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
                     save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 if (penOpt$plot){
-  psi_taus<-suppressMessages(suppressWarnings(get_data_plot_cloglik(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),n_taus=10,fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,
+  psi_taus<-suppressMessages(suppressWarnings(get_data_plot_cloglik(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),n_taus=penOpt$ntaus,fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,
                                   tol=control$tol,link_fun=link_fun,save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 
   plot(psi_taus$taus,psi_taus$cloglik,type="l",xlab="tau",ylab="conditional log-likelihood")

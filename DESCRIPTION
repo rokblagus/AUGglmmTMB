@@ -1,11 +1,11 @@
 Package: AUGglmmTMB
 Type: Package
-Title: Penalized and Augmented GLMM Tools
+Title: Penalized binomial mixed models
 Version: 0.1.0
 Authors@R: c(person(c("Rok","Blagus"),role=c("aut","cre"),email="rok.blagus@mf.uni-lj.si"))
 Author: Rok Blagus [aut, cre]
 Maintainer: Rok Blagus <rok.blagus@mf.uni-lj.si>
-Description: Tools for penalized and augmented generalized linear mixed models (GLMMs). Includes pseudo-data augmentation and fixed/random-effects penalties.
+Description: Tools for penalized binomial mixed models by data augmentation. Includes pseudo-data augmentation for fixed and/or random-effects penalties.
 License: GPL-3
 Encoding: UTF-8
 Imports:
