@@ -63,5 +63,4 @@ a unified framework.
 
 You can install the development version from GitHub:
 
-\`\`\`r \# install.packages(“remotes”)
-remotes::install_github(“rokblagus/AUGglmmTMB”)
+`# install.packages("remotes");remotes::install_github("rokblagus/AUGglmmTMB")`
