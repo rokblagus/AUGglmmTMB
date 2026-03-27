@@ -9,16 +9,16 @@
 #'
 #' @format A data frame with 366 rows and 6 variables:
 #' \describe{
-#'   \item{ID.bird}{Unique identifier for each bird (integer).}
+#'   \item{id}{Unique identifier for each bird (integer).}
 #'   \item{parasites}{Binary outcome indicating presence (1) or absence (0) of intestinal parasites.}
-#'   \item{Phylogenetic.Tomi}{Phylogenetic classification (factor) of the bird. There are 8 clusters ranging from 1 to 158 birds per cluster.}
+#'   \item{phylogenetic}{Phylogenetic classification (factor) of the bird. There are 8 clusters ranging from 1 to 158 birds per cluster.}
 #'   \item{migration}{Migratory behavior (factor) with levels "migratory" and "non-migratory". 298 migratory and 68 non-migratory birds.}
 #'   \item{food}{Diet type (factor) with levels "granivorous", "mixed", "omnivorous", and "insectivorous". 13, 211, 25, and 117 birds, respectively.}
 #'   \item{species}{Species identifier (factor), nested within the phylogenetic classification. 42 species clusters ranging from 1 to 56 birds per cluster.}
 #' }
 #'
 #' @details
-#' The dataset can be used to fit generalized linear mixed models (GLMMs) for binary outcomes,
+#' The dataset can be used to fit binomial mixed models for binary outcomes,
 #' including random intercepts for species and both random intercepts and slopes for migration
 #' at the phylogenetic level. This hierarchical structure allows for modeling of
 #' phylogenetic and species-level dependencies while evaluating the effects of migration
