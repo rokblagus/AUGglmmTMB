@@ -55,6 +55,7 @@ If \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effec
 If provided, \code{nu} and \code{psi} have to be lists, that can be of the same length as the number of specified random effects, in which case
 the penalty is applied to all random effects. If shorter, the penalty is applied
 only to the first \code{length(nu)} random-effects terms.
+Setting \code{autrepen=TRUE} uses the data-driven procedure proposed by Košuta et al. to determine the penalty parameters; the parameter \code{nu} is set to \eqn{2q-1} internally, any other value supplied in \code{nu} is ignored.
 }
 \examples{
 \dontrun{

@@ -221,15 +221,17 @@ to determine the penalty parameters for the random effects penalty.
 
 ``` r
 fit_mpl_2<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
-                penOpt = AUGglmmTMBPenalty(autrepen =TRUE,nu=list(3),plot=TRUE,ntaus=20),
+                penOpt = AUGglmmTMBPenalty(autrepen =TRUE,plot=TRUE,ntaus=20),
                       control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-The plot produced by `plot=TRUE,ntaus=20`, shows the conditional
-likelihood as a function of $\tau$, with the blue vertical line denoting
-the chosen value of $\tau$. Using this data-driven penalty
+The value of $\nu$ used by this data-driven procedure is equal to
+$\nu=2q-1$, as suggested by Košuta et al. The plot produced by
+`plot=TRUE,ntaus=20`, shows the conditional likelihood as a function of
+$\tau$, with the blue vertical line denoting the chosen value of $\tau$.
+Using this data-driven penalty
 
 ``` r
 fit_mpl_2$optre
@@ -298,7 +300,7 @@ on a single iteration of Algorithm 2 in Košuta et al.
 
 ``` r
 fit_mpl_3<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
-                penOpt = AUGglmmTMBPenalty(autrepen =TRUE,nu=list(3),plot=TRUE,ntaus=20),
+                penOpt = AUGglmmTMBPenalty(autrepen =TRUE,plot=TRUE,ntaus=20),
                       control=AUGglmmTMBControl(fit_pGLM = TRUE,maxiter = 1,tol=1e-5,save_coef=TRUE)   )
 ```
 
