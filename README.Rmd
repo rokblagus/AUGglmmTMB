@@ -41,5 +41,94 @@ These issues lead to unstable estimation and invalid inference. `AUGglmmTMB` pro
 
 You can install the development version from GitHub:
 
-`# install.packages("remotes");remotes::install_github("rokblagus/AUGglmmTMB")`
+`install.packages("remotes");remotes::install_github("rokblagus/AUGglmmTMB")`
+
+## Examples
+
+The functionality of the package is illustrated using a dataset on European passerine birds, originally published by Bandelj et al. The data used in their study included additional sampling to address the separation issue. In contrast, the dataset `data(birds)` provided with this R package corresponds to the original dataset, prior to this additional sampling.
+
+First, we fit the model using ML, as implemented in the R package `glmmTMB`, using the default settings.
+
+```{r}
+library(glmmTMB)
+library(AUGglmmTMB)
+data(birds)
+fit_ml<-glmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,family=binomial(link = "logit"))
+summary(fit_ml)
+
+```
+
+Due to the separation issue, the coefficient for `foods` is unreasonable. The estimated random effects covariance matrix at the level of `phylogenetic` is on the boundary of the parameter space, as evident by the correlation parameter `Corr` estimated at -1. Furtheremore, the standar errors cannot be computed for any of the model's parameters.
+
+```{r}
+fit_ml$sdr
+```
+
+
+To solve these issues, we fit the model using MPL, using the default penalty for the fixed effects penalty, inverse-Wishart penalty with $\nu=3$ and $\Psi=I_2$ ($2\times 2$ identity matrix) for the random effects covariance matrix at the level of `phylogenetic` and no penalty for the random effects covariance by `species`. We use Algorithm 1 from Košuta et al.
+
+```{r}
+fit_mpl_1<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,nu=list(3),psi=list(diag(1,2,2))),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+summary(fit_mpl_1$fit$fit)
+
+```
+
+
+The coefficient for `foods` is now more reasonable, with the random effects covariance matrix at the level of `phylogenetic` estimated away from the boundary. Unlike for ML, the standard errors for model's parameters can now be computed. However, there is still an issue with the SE for one of the random effects parameters, implying that the chosen prior for the random effects is not optimal.
+
+```{r}
+fit_mpl_1$fit$fit$sdr
+```
+
+Therefore, we use the data-driven procedure proposed by Košuta et al., to determine the penalty parameters for the random effects penalty. 
+
+```{r}
+fit_mpl_2<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =TRUE,nu=list(3),plot=TRUE,ntaus=20),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
+
+
+The plot produced by `plot=TRUE,ntaus=20`, shows the conditional likelihood as a function of $\tau$, with the blue vertical line denoting the chosen value of $\tau$. Using this data-driven penalty 
+```{r}
+fit_mpl_2$optre
+```
+the standard errors are now available for all model's parameters
+```{r}
+fit_mpl_2$fit$fit$sdr
+summary(fit_mpl_2$fit$fit)
+```
+
+We now use a computationally more efficient approximation of MPL, based on a single iteration of Algorithm 2 in Košuta et al.
+```{r}
+fit_mpl_3<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =TRUE,nu=list(3),plot=TRUE,ntaus=20),
+                      control=AUGglmmTMBControl(fit_pGLM = TRUE,maxiter = 1,tol=1e-5,save_coef=TRUE)   )
+```
+
+which gives very similar results than the exact implementation based on Algorithm 1: the difference between the two procedures relative to the SE obtained by the exact procedure is smaller than 1% of the estimated SE for all model's parameters
+```{r}
+(fit_mpl_2$fit$fit$sdr$par.fixed-fit_mpl_3$fit$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$fit$sdr$cov.fixed))*100
+fit_mpl_3$fit$fit$sdr
+summary(fit_mpl_3$fit$fit)
+```
+
+
+To implement a penalty on both random effects, we can e.g. use
+```{r}
+fit_mpl_4<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,nu=list(3,1),psi=list(fit_mpl_3$optre$psi,matrix(1,1,1))),
+                      control=AUGglmmTMBControl(fit_pGLM = TRUE,maxiter = 1,tol=1e-5,save_coef=TRUE)   )
+```
+
+where we used the data-driven penalty for the covariance matrix at the level of `phylogenetic` and the inverse-Wishart prior with $\nu=1$ and $\Psi=1$ for the covariance at the level of `species`.
+```{r}
+summary(fit_mpl_4$fit$fit)
+fit_mpl_4$fit$fit$sdr
+
+```
+
+
 
