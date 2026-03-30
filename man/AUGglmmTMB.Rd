@@ -29,11 +29,13 @@ observation weights. Default is \code{NULL}, in which case all weights are 1.}
 \item{penOpt}{List of penalty options, created by \code{\link{AUGglmmTMBPenalty}}:
 \describe{
   \item{cfe}{Numeric. Strength of penalty on fixed effects. If \code{NULL},
-    internally computed via \code{mv_multiplier()}. Setting \code{cfe = 0} disables fixed-effect penalty.}
+    internally computed via \code{\link{mv_multiplier}} as suggested by Košuta et al. Setting \code{cfe = 0} disables fixed-effect penalty.}
   \item{autrepen}{Logical. If \code{TRUE}, automatically estimates the random-effects
-    penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}); the penalty is only applied to the 1st random effect.}
-  \item{nu}{Optional list specifying random-effects penalty parameters. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects.}
-  \item{psi}{Optional list of random-effects penalty matrices; need to be of the same length as \code{nu}.}
+    penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}. When \code{TRUE}, the penalty is only applied to the 1st random effect.}
+  \item{nu}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
+  \item{psi}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
+\item{plot}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
+\item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 }}
 
 \item{control}{List of control parameters created via \code{\link{AUGglmmTMBControl}}.}
@@ -51,11 +53,11 @@ Fits a penalized binomial generalized linear mixed model with optional
 penalties on both fixed and random effects using the approach of Košuta et al.
 }
 \details{
-If \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
-If provided, \code{nu} and \code{psi} have to be lists, that can be of the same length as the number of specified random effects, in which case
-the penalty is applied to all random effects. If shorter, the penalty is applied
-only to the first \code{length(nu)} random-effects terms.
 Setting \code{autrepen=TRUE} uses the data-driven procedure proposed by Košuta et al. to determine the penalty parameters; the parameter \code{nu} is set to \eqn{2q-1} internally, any other value supplied in \code{nu} is ignored.
+If \code{autrepen=FALSE} and \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
+When \code{autrepen=FALSE}, if provided, \code{nu} and \code{psi}, can be of the same length as the number of specified random effects, in which case
+the penalty is applied to all random effects. If shorter, the penalty is applied
+only to the first \code{length(nu)} random-effects terms. When specified, \code{nu} and \code{psi} need to be of the same length: each element of \code{nu} and \code{psi} are the penalty parameters \eqn{\tau} and \eqn{\Psi}, respectively, for the corresponding random effect. When specified, the elements of \code{psi} need to be matrices of appropriate dimensions.
 }
 \examples{
 \dontrun{

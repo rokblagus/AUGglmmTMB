@@ -79,5 +79,5 @@ psi_opt
 }
 }
 \seealso{
-\code{\link{get_data_plot_cloglik}}, \code{\link{mpl_fitter}}
+\code{\link{AUGglmmTMB}}, \code{\link{get_data_plot_cloglik}}, \code{\link{mpl_fitter}}
 }

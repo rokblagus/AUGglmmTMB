@@ -15,19 +15,20 @@ AUGglmmTMBPenalty(
 }
 \arguments{
 \item{cfe}{Numeric. Strength of penalty on fixed effects. Default is \code{NULL},
-in which case \code{AUGglmmTMB} computes it internally via \code{\link{mv_multiplier}}.
+in which case \code{AUGglmmTMB} computes it internally via \code{\link{mv_multiplier}} as suggested by Košuta et al.
 Setting \code{cfe = 0} disables the fixed-effects penalty.}
 
-\item{autrepen}{Logical. If \code{TRUE}, automatically estimates random-effects
-penalty parameters (\eqn{\tau} and \eqn{\Psi}) when fitting the model, see \code{\link{get_psi}}. Default is \code{FALSE}.}
+\item{autrepen}{Logical. If \code{TRUE}, automatically estimates the random-effects
+penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}.
+When \code{TRUE}, the penalty is only applied to the 1st random effect.}
 
-\item{nu}{Optional numeric vector specifying random-effects penalty parameters. Default is \code{NULL}.}
+\item{nu}{Optional numeric vector specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.}
 
-\item{psi}{Optional list of random-effects penalty matrices. Default is \code{NULL}.}
+\item{psi}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
 
-\item{plot}{Logical flag for plotting the conditional likelihood; only applies when \code{autrepen=TRUE}. Default is \code{FALSE}.}
+\item{plot}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
 
-\item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood; only applies when \code{plot=TRUE}. Default is \code{50}.}
+\item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 }
 \value{
 A named list with elements:
@@ -48,12 +49,19 @@ This includes penalties for fixed effects and optional penalties for random effe
 This function does not perform any fitting itself. It simply returns a structured list
 that specifies how \code{\link{AUGglmmTMB}} should apply penalties to fixed and random effects.
 Use this function to easily create the \code{penOpt} argument for \code{\link{AUGglmmTMB}}.
+Setting \code{autrepen=FALSE} and \code{nu=NULL} turns off the penalty on the random effects covariance matrices.
 }
 \examples{
-# Default penalties
+# Default penalty on the fixed effects, no penalty on the random effects
 pen <- AUGglmmTMBPenalty()
 
-# Fixed-effects penalty of 0.5, automatic random-effects penalty
+# Fixed-effects penalty strength set to 0.5, data-driven random-effects penalty parameters
 pen2 <- AUGglmmTMBPenalty(cfe = 0.5, autrepen = TRUE)
+
+# No fixed-effects penalty, data-driven random-effects penalty parameters
+pen3 <- AUGglmmTMBPenalty(cfe = 0, autrepen = TRUE)
+
+# Turn off both penalties (the same as glmmTMB)
+pen4 <- AUGglmmTMBPenalty(cfe = 0)
 
 }

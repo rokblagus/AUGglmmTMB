@@ -726,7 +726,7 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #' penalties on both fixed and random effects. Two algorithms are available:
 #' Algorithm 1 and Algorithm 2. The single-iteration estimator from Košuta et el. is obtained by specifying \code{fit_pGLM = TRUE,maxiter=1}.
 #'
-#' @seealso \code{\link{get_psi}}, \code{\link{get_data_plot_cloglik}}
+#' @seealso \code{\link{AUGglmmTMB}}, \code{\link{get_psi}}, \code{\link{get_data_plot_cloglik}}
 #'
 #' @examples
 #' \dontrun{
@@ -790,6 +790,7 @@ mpl_fitter<-function(data,cfe,nu,psi,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun
 if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.")
   formula_fit<-make_formula(data)
   data<-restructure_data(data)
+  if (cfe==0) maxiter<-1
   flag=TRUE
   ii=0
   while (flag==TRUE&ii<(maxiter)){
@@ -969,7 +970,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 #' procedure consistent with the penalized likelihood framework described in
 #' Košuta et al.
 #'
-#' @seealso \code{\link{get_data_plot_cloglik}}, \code{\link{mpl_fitter}}
+#' @seealso \code{\link{AUGglmmTMB}}, \code{\link{get_data_plot_cloglik}}, \code{\link{mpl_fitter}}
 #'
 #' @examples
 #' \dontrun{
@@ -1166,7 +1167,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 #' of the fixed effects, and can be used in conjunction with the 1-SE rule for
 #' selecting \eqn{\tau}.
 #'
-#' @seealso \code{\link{get_psi}}, \code{\link{mpl_fitter}}
+#' @seealso \code{\link{AUGglmmTMB}}, \code{\link{get_psi}}, \code{\link{mpl_fitter}}
 #'
 #' @examples
 #' \dontrun{
@@ -1337,14 +1338,15 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' This includes penalties for fixed effects and optional penalties for random effects.
 #'
 #' @param cfe Numeric. Strength of penalty on fixed effects. Default is \code{NULL},
-#'   in which case \code{AUGglmmTMB} computes it internally via \code{\link{mv_multiplier}}.
+#'   in which case \code{AUGglmmTMB} computes it internally via \code{\link{mv_multiplier}} as suggested by Košuta et al.
 #'   Setting \code{cfe = 0} disables the fixed-effects penalty.
-#' @param autrepen Logical. If \code{TRUE}, automatically estimates random-effects
-#'   penalty parameters (\eqn{\tau} and \eqn{\Psi}) when fitting the model, see \code{\link{get_psi}}. Default is \code{FALSE}.
-#' @param nu Optional numeric vector specifying random-effects penalty parameters. Default is \code{NULL}.
-#' @param psi Optional list of random-effects penalty matrices. Default is \code{NULL}.
-#' @param plot Logical flag for plotting the conditional likelihood; only applies when \code{autrepen=TRUE}. Default is \code{FALSE}.
-#' @param ntaus Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood; only applies when \code{plot=TRUE}. Default is \code{50}.
+#' @param autrepen Logical. If \code{TRUE}, automatically estimates the random-effects
+#'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}.
+#'       When \code{TRUE}, the penalty is only applied to the 1st random effect.
+#' @param nu Optional numeric vector specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.
+#' @param psi Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.
+#' @param plot Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.
+#' @param ntaus Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.
 #'
 #' @return A named list with elements:
 #' \describe{
@@ -1360,13 +1362,20 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' This function does not perform any fitting itself. It simply returns a structured list
 #' that specifies how \code{\link{AUGglmmTMB}} should apply penalties to fixed and random effects.
 #' Use this function to easily create the \code{penOpt} argument for \code{\link{AUGglmmTMB}}.
+#' Setting \code{autrepen=FALSE} and \code{nu=NULL} turns off the penalty on the random effects covariance matrices.
 #'
 #' @examples
-#' # Default penalties
+#' # Default penalty on the fixed effects, no penalty on the random effects
 #' pen <- AUGglmmTMBPenalty()
 #'
-#' # Fixed-effects penalty of 0.5, automatic random-effects penalty
+#' # Fixed-effects penalty strength set to 0.5, data-driven random-effects penalty parameters
 #' pen2 <- AUGglmmTMBPenalty(cfe = 0.5, autrepen = TRUE)
+#'
+#' # No fixed-effects penalty, data-driven random-effects penalty parameters
+#' pen3 <- AUGglmmTMBPenalty(cfe = 0, autrepen = TRUE)
+#'
+#' # Turn off both penalties (the same as glmmTMB)
+#' pen4 <- AUGglmmTMBPenalty(cfe = 0)
 #'
 #' @export
 
@@ -1398,11 +1407,13 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #' @param penOpt List of penalty options, created by \code{\link{AUGglmmTMBPenalty}}:
 #'   \describe{
 #'     \item{cfe}{Numeric. Strength of penalty on fixed effects. If \code{NULL},
-#'       internally computed via \code{mv_multiplier()}. Setting \code{cfe = 0} disables fixed-effect penalty.}
+#'       internally computed via \code{\link{mv_multiplier}} as suggested by Košuta et al. Setting \code{cfe = 0} disables fixed-effect penalty.}
 #'     \item{autrepen}{Logical. If \code{TRUE}, automatically estimates the random-effects
-#'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}); the penalty is only applied to the 1st random effect.}
-#'     \item{nu}{Optional list specifying random-effects penalty parameters. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects.}
-#'     \item{psi}{Optional list of random-effects penalty matrices; need to be of the same length as \code{nu}.}
+#'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}. When \code{TRUE}, the penalty is only applied to the 1st random effect.}
+#'     \item{nu}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
+#'     \item{psi}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
+#'   \item{plot}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
+#'   \item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 #'   }
 #' @param control List of control parameters created via \code{\link{AUGglmmTMBControl}}.
 #'
@@ -1414,11 +1425,12 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #' }
 #'
 #' @details
-#' If \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
-#' If provided, \code{nu} and \code{psi} have to be lists, that can be of the same length as the number of specified random effects, in which case
-#' the penalty is applied to all random effects. If shorter, the penalty is applied
-#' only to the first \code{length(nu)} random-effects terms.
 #' Setting \code{autrepen=TRUE} uses the data-driven procedure proposed by Košuta et al. to determine the penalty parameters; the parameter \code{nu} is set to \eqn{2q-1} internally, any other value supplied in \code{nu} is ignored.
+#' If \code{autrepen=FALSE} and \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
+#' When \code{autrepen=FALSE}, if provided, \code{nu} and \code{psi}, can be of the same length as the number of specified random effects, in which case
+#' the penalty is applied to all random effects. If shorter, the penalty is applied
+#' only to the first \code{length(nu)} random-effects terms. When specified, \code{nu} and \code{psi} need to be of the same length: each element of \code{nu} and \code{psi} are the penalty parameters \eqn{\tau} and \eqn{\Psi}, respectively, for the corresponding random effect. When specified, the elements of \code{psi} need to be matrices of appropriate dimensions.
+#'
 #'
 #' @seealso \code{\link{AUGglmmTMBPenalty}},\code{\link{AUGglmmTMBControl}}, \code{\link{get_psi}}, \code{\link{mpl_fitter}}
 #'

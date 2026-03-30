@@ -130,5 +130,5 @@ fit_mpl1_2repen$coefs
 }
 }
 \seealso{
-\code{\link{get_psi}}, \code{\link{get_data_plot_cloglik}}
+\code{\link{AUGglmmTMB}}, \code{\link{get_psi}}, \code{\link{get_data_plot_cloglik}}
 }

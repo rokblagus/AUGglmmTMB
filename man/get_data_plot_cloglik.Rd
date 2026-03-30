@@ -106,5 +106,5 @@ abline(v=psi_opt$tau,lty=3,col="blue")
 }
 }
 \seealso{
-\code{\link{get_psi}}, \code{\link{mpl_fitter}}
+\code{\link{AUGglmmTMB}}, \code{\link{get_psi}}, \code{\link{mpl_fitter}}
 }
