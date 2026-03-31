@@ -31,15 +31,7 @@ When \code{TRUE}, the penalty is only applied to the 1st random effect.}
 \item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 }
 \value{
-A named list with elements:
-\describe{
-  \item{cfe}{Numeric fixed-effects penalty.}
-  \item{autrepen}{Logical flag for automatic random-effects penalty estimation.}
-  \item{nu}{List of random-effects penalty parameters.}
-  \item{psi}{List of random-effects penalty matrices.}
-  \item{plot}{Logical flag for plotting the conditional likelihood.}
-  \item{ntaus}{Numeric number of different values of \eqn{\tau} to be used when plotting the conditional likelihood.}
-}
+A named list containing all specified penalty parameters.
 }
 \description{
 Constructs a list of penalty parameters to be used with \code{\link{AUGglmmTMB}}.

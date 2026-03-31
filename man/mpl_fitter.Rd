@@ -77,6 +77,8 @@ A list with the following elements:
 Fits a penalized binomial mixed model (GLMM) using Algorithm 1 or Algorithm 2 presented in Košuta et al.
 }
 \details{
+This function is used internally by \code{\link{AUGglmmTMB}} and is not meant to be used directly (it can be, if used correctly, however (much) faster).
+
 The function implements penalized likelihood estimation for binomial mixed model with optional
 penalties on both fixed and random effects. Two algorithms are available:
 Algorithm 1 and Algorithm 2. The single-iteration estimator from Košuta et el. is obtained by specifying \code{fit_pGLM = TRUE,maxiter=1}.

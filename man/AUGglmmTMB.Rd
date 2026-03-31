@@ -8,7 +8,7 @@ AUGglmmTMB(
   formula,
   data,
   weights = NULL,
-  link = NULL,
+  link = "logit",
   penOpt = AUGglmmTMBPenalty(),
   control = AUGglmmTMBControl()
 )
@@ -18,7 +18,7 @@ AUGglmmTMB(
 effects in standard R formula syntax. Random effects should be of the form
 \code{(expr | factor)}.}
 
-\item{data}{A \code{data.frame} containing all variables used in \code{formula}.}
+\item{data}{A \code{data.frame} containing all variables used in \code{formula}. When missing values are present, the observations with any missing value are removed as in \code{\link{na.omit}}.}
 
 \item{weights}{Optional. Column name, as in \code{\link{glmmTMB}} in \code{data} specifying
 observation weights. Default is \code{NULL}, in which case all weights are 1.}
@@ -28,22 +28,43 @@ observation weights. Default is \code{NULL}, in which case all weights are 1.}
 
 \item{penOpt}{List of penalty options, created by \code{\link{AUGglmmTMBPenalty}}:
 \describe{
-  \item{cfe}{Numeric. Strength of penalty on fixed effects. If \code{NULL},
+  \item{\code{cfe}}{Numeric. Strength of penalty on fixed effects. If \code{NULL} (the default),
     internally computed via \code{\link{mv_multiplier}} as suggested by Košuta et al. Setting \code{cfe = 0} disables fixed-effect penalty.}
-  \item{autrepen}{Logical. If \code{TRUE}, automatically estimates the random-effects
-    penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}. When \code{TRUE}, the penalty is only applied to the 1st random effect.}
-  \item{nu}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
-  \item{psi}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
-\item{plot}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
-\item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
+  \item{\code{autrepen}}{Logical. If \code{TRUE}, automatically estimates the random-effects
+    penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). When \code{TRUE}, the penalty is only applied to the 1st random effect. Default is \code{FALSE}.}
+  \item{\code{nu}}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
+  \item{\code{psi}}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
+\item{\code{plot}}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
+\item{\code{ntaus}}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 }}
 
-\item{control}{List of control parameters created via \code{\link{AUGglmmTMBControl}}.}
+\item{control}{List of control parameters created via \code{\link{AUGglmmTMBControl}}:
+\describe{
+\item{\code{fit_pGLM}}{Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
+  in Košuta et al.), otherwise it uses Algorithm 1. Default is \code{FALSE}.}
+\item{\code{maxiter}}{Integer. Maximum number of iterations for the penalized likelihood
+  fitting procedure. Default is 50.}
+\item{\code{tol}}{Numeric. Convergence tolerance based on changes in parameter estimates.
+  Default is 1e-6.}
+\item{\code{save_coef}}{Logical. If \code{TRUE}, stores coefficient estimates at each
+  iteration. Default is \code{FALSE}.}
+\item{\code{inter_iter}}{Integer. Number of internal iterations used by
+  \pkg{glmmTMB}. Default is 1000.}
+\item{\code{use_previous}}{Logical. If \code{TRUE}, uses estimates from the previous
+  iteration as starting values. Default is \code{FALSE}.}
+}}
 }
 \value{
 A list with elements:
 \describe{
-  \item{fit}{The fitted penalized GLMM object, see also \code{\link{mpl_fitter}}.}
+  \item{fit}{A list with the elements:
+  \describe{
+  \item{fit}{The fitted penalized GLMM object of class \code{\link{glmmTMB}}.}
+  \item{loglik}{The unpenalized marginal log-likelihood.}
+  \item{coefs}{Matrix of GLMM parameter estimates by iteration.}
+  \item{coefs_glm}{Matrix of GLM parameter estimates by iteration (only relevant
+  when \code{fit_pGLM = TRUE}).}
+}}
   \item{optre}{List with elements \code{opt_tau} and \code{opt_psi} corresponding
     to estimated random-effects penalty parameters if \code{autrepen = TRUE}, otherwise \code{NULL}.}
 }
@@ -62,15 +83,59 @@ only to the first \code{length(nu)} random-effects terms. When specified, \code{
 \examples{
 \dontrun{
 data(birds)
+
+#default fixed-effects penalty, no penalty on the random effect;
+#single-iteration approximation to MPL
+
 fit <- AUGglmmTMB(
-  cbind(parasites, 1 - parasites) ~ migration + (1 | species),
+  cbind(parasites, 1 - parasites) ~ migration + food + (1 | species),
   data = birds,
   weights = NULL,
   link = "logit",
-  penOpt = AUGglmmTMBPenalty(cfe = 1),
+  penOpt = AUGglmmTMBPenalty(),
   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 )
-summary(fit$fit)
+summary(fit$fit$fit)
+
+#the same
+
+fit2 <- AUGglmmTMB(
+  parasites ~ migration + food + (1 | species),
+  data = birds,
+  weights = NULL,
+  link = "logit",
+  penOpt = AUGglmmTMBPenalty(),
+  control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
+)
+summary(fit2$fit$fit)
+
+#default penalty on the fixed effects, penalty on both random effects;
+#single-iteration approximation to MPL
+
+fit3 <- AUGglmmTMB(
+  parasites ~ migration + food + (migration|phylogenetic) + (1 | species),
+  data = birds,
+  weights = NULL,
+  link = "logit",
+  penOpt = AUGglmmTMBPenalty(nu=list(3,1),psi=list(diag(1,2,2),matrix(1,1,1))),
+  control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
+)
+summary(fit3$fit$fit)
+
+#default penalty on the fixed effects, data-driven penalty on phylogenetic, no penalty on species;
+#single-iteration approximation to MPL
+
+fit4 <- AUGglmmTMB(
+  parasites ~ migration + food + (migration|phylogenetic) + (1 | species),
+  data = birds,
+  weights = NULL,
+  link = "logit",
+  penOpt = AUGglmmTMBPenalty(autrepen=TRUE,plot=TRUE,ntaus =20),
+  control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
+)
+
+fit4$optre
+summary(fit4$fit$fit)
 }
 
 }

@@ -28,19 +28,11 @@ includes two additional pseudo-observations per original observation.
 }
 \description{
 Creates an augmented dataset by adding pseudo-observations corresponding to
-the fixed-effects penalty. This implements the data-augmentation representation
-of the penalty within a GLMM framework.
+the fixed-effects penalty.
 }
 \details{
 The function constructs pseudo-data corresponding to the fixed-effects penalty
-using a data-augmentation approach. The augmented observations are derived from
-the first and second derivatives of the inverse link function and depend on the
-current value of the linear predictor. The weights are adjusted using leverage
-values to ensure appropriate scaling of the penalty.
-
-Random-effects design matrices and grouping variables are expanded accordingly
-by adding zero rows for the pseudo-observations while preserving the original
-grouping structure.
+using a data-augmentation approach.
 }
 \examples{
 data(birds)

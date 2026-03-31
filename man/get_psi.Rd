@@ -52,6 +52,8 @@ penalty, following the approach of Košuta et al. The penalty is assumed to be
 applied only to the first random-effects term.
 }
 \details{
+This function is used internally by \code{\link{AUGglmmTMB}} and is not meant to be used directly (it can be, if used correctly, however (much) faster).
+
 The procedure assumes that the random-effects penalty is imposed only on the
 first random-effects component. The estimates are obtained using an iterative
 procedure consistent with the penalized likelihood framework described in

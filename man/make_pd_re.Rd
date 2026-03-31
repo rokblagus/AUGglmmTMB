@@ -37,7 +37,7 @@ A list representing the augmented dataset with the following elements:
 \description{
 Constructs an augmented dataset by adding pseudo-data corresponding to a
 random-effects penalty for a selected random effect. This allows penalized
-estimation of random effects in GLMMs.
+estimation of random effects.
 }
 \details{
 The function generates pseudo-observations for a selected random effect using

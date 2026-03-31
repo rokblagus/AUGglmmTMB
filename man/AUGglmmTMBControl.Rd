@@ -15,7 +15,7 @@ AUGglmmTMBControl(
 }
 \arguments{
 \item{fit_pGLM}{Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
-in Košuta et al.). Default is \code{FALSE}.}
+in Košuta et al.), otherwise it uses Algorithm 1. Default is \code{FALSE}.}
 
 \item{maxiter}{Integer. Maximum number of iterations for the penalized likelihood
 fitting procedure. Default is 50.}
@@ -40,7 +40,14 @@ Create a list of control parameters to customize the fitting behavior of
 \code{\link{AUGglmmTMB}}.
 }
 \examples{
-ctrl <- AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 100, tol = 1e-5)
-str(ctrl)
+
+#Algorithm 1 from Košuta et al.
+ctrl <- AUGglmmTMBControl(fit_pGLM = FALSE)
+
+#Algorithm 2 from Košuta et al.
+ctrl2 <- AUGglmmTMBControl(fit_pGLM = TRUE)
+
+#single-iteration approximation to MPL from Košuta et al.
+ctrl3 <- AUGglmmTMBControl(fit_pGLM = TRUE,maxiter=1)
 
 }

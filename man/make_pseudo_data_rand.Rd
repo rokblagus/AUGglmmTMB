@@ -41,14 +41,12 @@ A list containing a single element \code{data}, which itself is a list with
 }
 \description{
 Constructs pseudo-observations corresponding to the random-effects penalty
-using an eigen-decomposition approach. This data-augmentation representation
-allows penalization of random effects in a GLMM framework.
+using an eigen-decomposition approach.
 }
 \details{
 The function performs an eigen-decomposition of \code{psi} (scaled according
 to \code{nu} and \code{param}) to generate pseudo-data that encode the
-random-effects penalty. Each eigenvector is used to construct pseudo-observations
-that are transformed by the specified inverse link function. The pseudo-data
+random-effects penalty. The pseudo-data
 can then be combined with the original data for penalized GLMM fitting.
 }
 \examples{
