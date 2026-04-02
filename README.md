@@ -157,7 +157,7 @@ Košuta et al.
 fit_mpl_1<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
                 penOpt = AUGglmmTMBPenalty(autrepen =FALSE,nu=list(3),psi=list(diag(1,2,2))),
                       control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
-summary(fit_mpl_1$fit$fit)
+summary(fit_mpl_1$fit)
 ```
 
     ##  Family: binomial  ( logit )
@@ -195,7 +195,7 @@ the SE for one of the random effects parameters, implying that the
 chosen prior for the random effects is not optimal.
 
 ``` r
-fit_mpl_1$fit$fit$sdr
+fit_mpl_1$fit$sdr
 ```
 
     ## sdreport(.) result
@@ -248,7 +248,7 @@ fit_mpl_2$optre
 the standard errors are now available for all model’s parameters
 
 ``` r
-fit_mpl_2$fit$fit$sdr
+fit_mpl_2$fit$sdr
 ```
 
     ## sdreport(.) result
@@ -265,7 +265,7 @@ fit_mpl_2$fit$fit$sdr
     ## Maximum gradient component: 0.9157068
 
 ``` r
-summary(fit_mpl_2$fit$fit)
+summary(fit_mpl_2$fit)
 ```
 
     ##  Family: binomial  ( logit )
@@ -312,7 +312,7 @@ SE obtained by the exact procedure is smaller than 1% of the estimated
 SE for all model’s parameters
 
 ``` r
-(fit_mpl_2$fit$fit$sdr$par.fixed-fit_mpl_3$fit$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$fit$sdr$cov.fixed))*100
+(fit_mpl_2$fit$sdr$par.fixed-fit_mpl_3$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$sdr$cov.fixed))*100
 ```
 
     ##         beta         beta         beta         beta         beta        theta 
@@ -321,7 +321,7 @@ SE for all model’s parameters
     ##  0.030918940  0.017866347 -0.004162099
 
 ``` r
-fit_mpl_3$fit$fit$sdr
+fit_mpl_3$fit$sdr
 ```
 
     ## sdreport(.) result
@@ -338,7 +338,7 @@ fit_mpl_3$fit$fit$sdr
     ## Maximum gradient component: 0.9150307
 
 ``` r
-summary(fit_mpl_3$fit$fit)
+summary(fit_mpl_3$fit)
 ```
 
     ##  Family: binomial  ( logit )
@@ -381,7 +381,7 @@ level of `phylogenetic` and the inverse-Wishart prior with $\nu=1$ and
 $\Psi=1$ for the covariance at the level of `species`.
 
 ``` r
-summary(fit_mpl_4$fit$fit)
+summary(fit_mpl_4$fit)
 ```
 
     ##  Family: binomial  ( logit )
@@ -412,7 +412,7 @@ summary(fit_mpl_4$fit$fit)
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ``` r
-fit_mpl_4$fit$fit$sdr
+fit_mpl_4$fit$sdr
 ```
 
     ## sdreport(.) result

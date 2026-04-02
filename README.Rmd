@@ -71,7 +71,7 @@ To solve these issues, we fit the model using MPL, using the default penalty for
 fit_mpl_1<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
                 penOpt = AUGglmmTMBPenalty(autrepen =FALSE,nu=list(3),psi=list(diag(1,2,2))),
                       control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
-summary(fit_mpl_1$fit$fit)
+summary(fit_mpl_1$fit)
 
 ```
 
@@ -79,7 +79,7 @@ summary(fit_mpl_1$fit$fit)
 The coefficient for `foods` is now more reasonable, with the random effects covariance matrix at the level of `phylogenetic` estimated away from the boundary. Unlike for ML, the standard errors for model's parameters can now be computed. However, there is still an issue with the SE for one of the random effects parameters, implying that the chosen prior for the random effects is not optimal.
 
 ```{r}
-fit_mpl_1$fit$fit$sdr
+fit_mpl_1$fit$sdr
 ```
 
 Therefore, we use the data-driven procedure proposed by Košuta et al., to determine the penalty parameters for the random effects penalty. 
@@ -97,8 +97,8 @@ fit_mpl_2$optre
 ```
 the standard errors are now available for all model's parameters
 ```{r}
-fit_mpl_2$fit$fit$sdr
-summary(fit_mpl_2$fit$fit)
+fit_mpl_2$fit$sdr
+summary(fit_mpl_2$fit)
 ```
 
 We now use a computationally more efficient approximation of MPL, based on a single iteration of Algorithm 2 in Košuta et al.
@@ -110,9 +110,9 @@ fit_mpl_3<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|speci
 
 which gives very similar results than the exact implementation based on Algorithm 1: the difference between the two procedures relative to the SE obtained by the exact procedure is smaller than 1% of the estimated SE for all model's parameters
 ```{r}
-(fit_mpl_2$fit$fit$sdr$par.fixed-fit_mpl_3$fit$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$fit$sdr$cov.fixed))*100
-fit_mpl_3$fit$fit$sdr
-summary(fit_mpl_3$fit$fit)
+(fit_mpl_2$fit$sdr$par.fixed-fit_mpl_3$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$sdr$cov.fixed))*100
+fit_mpl_3$fit$sdr
+summary(fit_mpl_3$fit)
 ```
 
 
@@ -125,8 +125,8 @@ fit_mpl_4<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|speci
 
 where we used the data-driven penalty for the covariance matrix at the level of `phylogenetic` and the inverse-Wishart prior with $\nu=1$ and $\Psi=1$ for the covariance at the level of `species`.
 ```{r}
-summary(fit_mpl_4$fit$fit)
-fit_mpl_4$fit$fit$sdr
+summary(fit_mpl_4$fit)
+fit_mpl_4$fit$sdr
 
 ```
 

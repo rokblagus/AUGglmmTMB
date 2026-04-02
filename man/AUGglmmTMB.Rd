@@ -57,16 +57,12 @@ observation weights. Default is \code{NULL}, in which case all weights are 1.}
 \value{
 A list with elements:
 \describe{
-  \item{fit}{A list with the elements:
-  \describe{
   \item{fit}{The fitted penalized GLMM object of class \code{\link{glmmTMB}}.}
   \item{loglik}{The unpenalized marginal log-likelihood.}
-  \item{coefs}{Matrix of GLMM parameter estimates by iteration.}
-  \item{coefs_glm}{Matrix of GLM parameter estimates by iteration (only relevant
-  when \code{fit_pGLM = TRUE}).}
-}}
-  \item{optre}{List with elements \code{opt_tau} and \code{opt_psi} corresponding
-    to estimated random-effects penalty parameters if \code{autrepen = TRUE}, otherwise \code{NULL}.}
+  \item{coefs}{If \code{save_coef=TRUE}, a list with elements \code{coefs_glmm} and \code{coefs_glm}
+  (corresponding to the matrices of GLMM and GLM parameters, respectively), otherwise \code{NULL}.}
+  \item{optre}{If \code{autrepen = TRUE}, a list with elements \code{opt_tau} and \code{opt_psi}
+  (corresponding to the estimated penalty parameter \eqn{\tau} and penalty matrix \eqn{\Psi}, respectively), otherwise \code{NULL}.}
 }
 }
 \description{
@@ -87,7 +83,7 @@ data(birds)
 #default fixed-effects penalty, no penalty on the random effect;
 #single-iteration approximation to MPL
 
-fit <- AUGglmmTMB(
+fit1 <- AUGglmmTMB(
   cbind(parasites, 1 - parasites) ~ migration + food + (1 | species),
   data = birds,
   weights = NULL,
@@ -95,7 +91,7 @@ fit <- AUGglmmTMB(
   penOpt = AUGglmmTMBPenalty(),
   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 )
-summary(fit$fit$fit)
+summary(fit1$fit)
 
 #the same
 
@@ -107,7 +103,7 @@ fit2 <- AUGglmmTMB(
   penOpt = AUGglmmTMBPenalty(),
   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 )
-summary(fit2$fit$fit)
+summary(fit2$fit)
 
 #default penalty on the fixed effects, penalty on both random effects;
 #single-iteration approximation to MPL
@@ -120,7 +116,7 @@ fit3 <- AUGglmmTMB(
   penOpt = AUGglmmTMBPenalty(nu=list(3,1),psi=list(diag(1,2,2),matrix(1,1,1))),
   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 )
-summary(fit3$fit$fit)
+summary(fit3$fit)
 
 #default penalty on the fixed effects, data-driven penalty on phylogenetic, no penalty on species;
 #single-iteration approximation to MPL
@@ -135,7 +131,7 @@ fit4 <- AUGglmmTMB(
 )
 
 fit4$optre
-summary(fit4$fit$fit)
+summary(fit4$fit)
 }
 
 }

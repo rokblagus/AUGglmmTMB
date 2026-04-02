@@ -1428,18 +1428,13 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'
 #' @return A list with elements:
 #' \describe{
-#'   \item{fit}{A list with the elements:
-#'   \describe{
 #'   \item{fit}{The fitted penalized GLMM object of class \code{\link{glmmTMB}}.}
 #'   \item{loglik}{The unpenalized marginal log-likelihood.}
-#'   \item{coefs}{Matrix of GLMM parameter estimates by iteration.}
-#'   \item{coefs_glm}{Matrix of GLM parameter estimates by iteration (only relevant
-#'   when \code{fit_pGLM = TRUE}).}
-#' }}
-#'   \item{optre}{List with elements \code{opt_tau} and \code{opt_psi} corresponding
-#'     to estimated random-effects penalty parameters if \code{autrepen = TRUE}, otherwise \code{NULL}.}
+#'   \item{coefs}{If \code{save_coef=TRUE}, a list with elements \code{coefs_glmm} and \code{coefs_glm}
+#'   (corresponding to the matrices of GLMM and GLM parameters, respectively), otherwise \code{NULL}.}
+#'   \item{optre}{If \code{autrepen = TRUE}, a list with elements \code{opt_tau} and \code{opt_psi}
+#'   (corresponding to the estimated penalty parameter \eqn{\tau} and penalty matrix \eqn{\Psi}, respectively), otherwise \code{NULL}.}
 #' }
-#'
 #' @details
 #' Setting \code{autrepen=TRUE} uses the data-driven procedure proposed by Košuta et al. to determine the penalty parameters; the parameter \code{nu} is set to \eqn{2q-1} internally, any other value supplied in \code{nu} is ignored.
 #' If \code{autrepen=FALSE} and \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
@@ -1457,7 +1452,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #' #default fixed-effects penalty, no penalty on the random effect;
 #' #single-iteration approximation to MPL
 #'
-#' fit <- AUGglmmTMB(
+#' fit1 <- AUGglmmTMB(
 #'   cbind(parasites, 1 - parasites) ~ migration + food + (1 | species),
 #'   data = birds,
 #'   weights = NULL,
@@ -1465,7 +1460,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'   penOpt = AUGglmmTMBPenalty(),
 #'   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 #' )
-#' summary(fit$fit$fit)
+#' summary(fit1$fit)
 #'
 #' #the same
 #'
@@ -1477,7 +1472,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'   penOpt = AUGglmmTMBPenalty(),
 #'   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 #' )
-#' summary(fit2$fit$fit)
+#' summary(fit2$fit)
 #'
 #' #default penalty on the fixed effects, penalty on both random effects;
 #' #single-iteration approximation to MPL
@@ -1490,7 +1485,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'   penOpt = AUGglmmTMBPenalty(nu=list(3,1),psi=list(diag(1,2,2),matrix(1,1,1))),
 #'   control = AUGglmmTMBControl(fit_pGLM = TRUE, maxiter = 1)
 #' )
-#' summary(fit3$fit$fit)
+#' summary(fit3$fit)
 #'
 #' #default penalty on the fixed effects, data-driven penalty on phylogenetic, no penalty on species;
 #' #single-iteration approximation to MPL
@@ -1505,7 +1500,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #' )
 #'
 #' fit4$optre
-#' summary(fit4$fit$fit)
+#' summary(fit4$fit)
 #' }
 #'
 #' @export
@@ -1665,6 +1660,6 @@ if (penOpt$plot){
                     save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
   }
 
-  list(fit=fit,optre=list(tau=opt_tau,psi=opt_psi))
+  list(fit=fit$fit,loglik=fit$loglik,coefs=list(coefs_glmm=fit$coefs,coefs_glm=fit$coefs_glm),optre=list(tau=opt_tau,psi=opt_psi))
 
 }
