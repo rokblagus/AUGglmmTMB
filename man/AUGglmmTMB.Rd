@@ -34,7 +34,7 @@ observation weights. Default is \code{NULL}, in which case all weights are 1.}
     penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). When \code{TRUE}, the penalty is only applied to the 1st random effect. Default is \code{FALSE}.}
   \item{\code{nu}}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
   \item{\code{psi}}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
-\item{\code{plot}}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
+\item{\code{plot}}{Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
 \item{\code{ntaus}}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 }}
 

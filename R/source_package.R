@@ -287,7 +287,8 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
   omega<-c(get_omega(lp))
 
   W<-diag(data$W*data$M*omega)
-  Xw <- (W %^% 0.5) %*% data$X
+  #Xw <- (W %^% 0.5) %*% data$X
+  Xw <- sqrt(W ) %*% data$X #faster?
   qrXw <- qr(Xw)
   H <- tcrossprod(qr.Q(qrXw))
   hi<-diag(H)
@@ -848,7 +849,10 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
     control = glmmTMBControl(
       optCtrl = list(iter.max = inter_iter, eval.max = inter_iter),
       profile = FALSE,
-      collect = FALSE
+      collect = FALSE,
+      eigval_check=FALSE,
+      rank_check="skip",
+      conv_check="skip"
     ),
     se = FALSE,
     verbose = FALSE,
@@ -899,7 +903,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 
       gmm.fit2<-glmmTMB(gmm.fit$call$formula,data=xdfa,family=binomial(link=link_fun),
                         start=list(beta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"beta"],theta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"theta"]),
-                        control = glmmTMBControl(optCtrl = list(iter.max=0, eval.max=0),rank_check ="skip",conv_check="skip")
+                        control = glmmTMBControl(optCtrl = list(iter.max=0, eval.max=0),eigval_check=FALSE,rank_check ="skip",conv_check="skip")
       )
 
 
@@ -912,7 +916,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
     #refit to orig data only
     gmm.fit3<-glmmTMB(gmm.fit$call$formula,data=data,family=binomial(link=link_fun),
                       start=list(beta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"beta"],theta=gmm.fit$fit$par[names(gmm.fit$fit$par)%in%"theta"]),
-                      control = glmmTMBControl(optCtrl = list(iter.max=0, eval.max=0),rank_check ="skip",conv_check="skip")
+                      control = glmmTMBControl(optCtrl = list(iter.max=0, eval.max=0),eigval_check=FALSE,rank_check ="skip",conv_check="skip")
     )
 
 
@@ -1338,7 +1342,6 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' Create penalty options for AUGglmmTMB
 #'
 #' Constructs a list of penalty parameters to be used with \code{\link{AUGglmmTMB}}.
-#' This includes penalties for fixed effects and optional penalties for random effects.
 #'
 #' @param cfe Numeric. Strength of penalty on fixed effects. Default is \code{NULL},
 #'   in which case \code{AUGglmmTMB} computes it internally via \code{\link{mv_multiplier}} as suggested by Košuta et al.
@@ -1346,9 +1349,9 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' @param autrepen Logical. If \code{TRUE}, automatically estimates the random-effects
 #'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}.
 #'       When \code{TRUE}, the penalty is only applied to the 1st random effect.
-#' @param nu Optional numeric vector specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.
+#' @param nu Optional list of numeric vectors specifying random-effects penalty parameters (degrees of freedom). If not \code{NULL}, \code{nu} must be a list in which each element is a single numeric value. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.
 #' @param psi Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.
-#' @param plot Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.
+#' @param plot Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.
 #' @param ntaus Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.
 #'
 #' @return A named list containing all specified penalty parameters.
@@ -1407,7 +1410,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). When \code{TRUE}, the penalty is only applied to the 1st random effect. Default is \code{FALSE}.}
 #'     \item{\code{nu}}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
 #'     \item{\code{psi}}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
-#'   \item{\code{plot}}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
+#'   \item{\code{plot}}{Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
 #'   \item{\code{ntaus}}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 #'   }
 #' @param control List of control parameters created via \code{\link{AUGglmmTMBControl}}:

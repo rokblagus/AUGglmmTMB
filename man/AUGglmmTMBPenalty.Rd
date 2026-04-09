@@ -22,11 +22,11 @@ Setting \code{cfe = 0} disables the fixed-effects penalty.}
 penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). Default is \code{FALSE}.
 When \code{TRUE}, the penalty is only applied to the 1st random effect.}
 
-\item{nu}{Optional numeric vector specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.}
+\item{nu}{Optional list of numeric vectors specifying random-effects penalty parameters (degrees of freedom). If not \code{NULL}, \code{nu} must be a list in which each element is a single numeric value. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.}
 
 \item{psi}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
 
-\item{plot}{Logical flag for plotting the conditional likelihood. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
+\item{plot}{Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
 
 \item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 }
@@ -35,7 +35,6 @@ A named list containing all specified penalty parameters.
 }
 \description{
 Constructs a list of penalty parameters to be used with \code{\link{AUGglmmTMB}}.
-This includes penalties for fixed effects and optional penalties for random effects.
 }
 \details{
 This function does not perform any fitting itself. It simply returns a structured list
