@@ -179,11 +179,11 @@ summary(fit_mpl_1$fit)
     ## 
     ## Conditional model:
     ##              Estimate Std. Error z value Pr(>|z|)    
-    ## X(Intercept) -2.03708    0.41458  -4.914 8.94e-07 ***
-    ## Xmigration   -1.38678    1.12539  -1.232   0.2179    
-    ## Xfoods       -1.16077    3.14559  -0.369   0.7121    
-    ## Xfoodv        2.30047    1.37073   1.678   0.0933 .  
-    ## Xfoodz       -0.01401    0.51790  -0.027   0.9784    
+    ## X(Intercept) -2.03708    0.41456  -4.914 8.93e-07 ***
+    ## Xmigration   -1.38674    1.12537  -1.232   0.2179    
+    ## Xfoods       -1.16066    3.14539  -0.369   0.7121    
+    ## Xfoodv        2.30036    1.37073   1.678   0.0933 .  
+    ## Xfoodz       -0.01398    0.51790  -0.027   0.9785    
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -203,18 +203,18 @@ fit_mpl_1$fit$sdr
     ## Warning in sqrt(diag(object$cov.fixed)): NaNs produced
 
     ##           Estimate Std. Error
-    ## beta  -2.037080641  0.4145798
-    ## beta  -1.386780220  1.1253945
-    ## beta  -1.160766473  3.1455864
-    ## beta   2.300469992  1.3707286
-    ## beta  -0.014005846  0.5179004
-    ## theta -0.941613825  0.8747518
-    ## theta -0.895685689  0.9383581
-    ## theta -0.008284268        NaN
-    ## theta -0.452297046  0.4642174
+    ## beta  -2.037080608  0.4145640
+    ## beta  -1.386743264  1.1253655
+    ## beta  -1.160664560  3.1453934
+    ## beta   2.300355740  1.3707279
+    ## beta  -0.013983021  0.5179034
+    ## theta -0.941644111  0.8747730
+    ## theta -0.895649404  0.9383115
+    ## theta -0.008254969        NaN
+    ## theta -0.452251391  0.4641996
     ## Warning:
     ## Hessian of fixed effects was not positive definite.
-    ## Maximum gradient component: 0.7870051
+    ## Maximum gradient component: 0.7870137
 
 Therefore, we use the data-driven procedure proposed by Košuta et al.,
 to determine the penalty parameters for the random effects penalty.
@@ -238,12 +238,12 @@ fit_mpl_2$optre
 ```
 
     ## $tau
-    ## [1] 0.126512
+    ## [1] 0.1263475
     ## 
     ## $psi
-    ##            [,1]       [,2]
-    ## [1,]  0.9291683 -0.8215102
-    ## [2,] -0.8215102  4.7267192
+    ##            [,1]      [,2]
+    ## [1,]  0.9282133 -0.821665
+    ## [2,] -0.8216650  4.726479
 
 the standard errors are now available for all model’s parameters
 
@@ -253,16 +253,16 @@ fit_mpl_2$fit$sdr
 
     ## sdreport(.) result
     ##          Estimate Std. Error
-    ## beta  -1.95674377  0.6069806
-    ## beta  -1.54866333  1.4033417
-    ## beta  -0.88192275  3.3835891
-    ## beta   2.21984059  1.5328790
-    ## beta  -0.06668198  0.5690398
-    ## theta -0.97543819  0.8599558
-    ## theta -0.12680044  0.9642099
-    ## theta -0.44180381  3.8750655
-    ## theta -0.48510956  0.4892424
-    ## Maximum gradient component: 0.9157068
+    ## beta  -1.95661642  0.6063953
+    ## beta  -1.54886063  1.4027587
+    ## beta  -0.88187973  3.3832993
+    ## beta   2.21991850  1.5328207
+    ## beta  -0.06669382  0.5688629
+    ## theta -0.97591115  0.8601511
+    ## theta -0.12681709  0.9632248
+    ## theta -0.44217196  3.8686397
+    ## theta -0.48511012  0.4892041
+    ## Maximum gradient component: 0.915568
 
 ``` r
 summary(fit_mpl_2$fit)
@@ -280,18 +280,18 @@ summary(fit_mpl_2$fit)
     ## 
     ## Conditional model:
     ##  Groups    Name          Variance Std.Dev. Corr  
-    ##  grouping1 Z1(Intercept) 0.1421   0.3770         
-    ##            Z1migration   0.7760   0.8809   -0.40 
-    ##  grouping2 Z2            0.3790   0.6156         
+    ##  grouping1 Z1(Intercept) 0.142    0.3768         
+    ##            Z1migration   0.776    0.8809   -0.40 
+    ##  grouping2 Z2            0.379    0.6156         
     ## Number of obs: 378, groups:  grouping1, 14; grouping2, 48
     ## 
     ## Conditional model:
     ##              Estimate Std. Error z value Pr(>|z|)   
-    ## X(Intercept) -1.95674    0.60698  -3.224  0.00127 **
-    ## Xmigration   -1.54866    1.40334  -1.104  0.26979   
-    ## Xfoods       -0.88192    3.38359  -0.261  0.79436   
-    ## Xfoodv        2.21984    1.53288   1.448  0.14757   
-    ## Xfoodz       -0.06668    0.56904  -0.117  0.90671   
+    ## X(Intercept) -1.95662    0.60640  -3.227  0.00125 **
+    ## Xmigration   -1.54886    1.40276  -1.104  0.26953   
+    ## Xfoods       -0.88188    3.38330  -0.261  0.79436   
+    ## Xfoodv        2.21992    1.53282   1.448  0.14755   
+    ## Xfoodz       -0.06669    0.56886  -0.117  0.90667   
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -306,7 +306,7 @@ fit_mpl_3<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|speci
 
 ![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-which gives very similar results than the exact implementation based on
+which gives very similar results as the exact implementation based on
 Algorithm 1: the difference between the two procedures relative to the
 SE obtained by the exact procedure is smaller than 1% of the estimated
 SE for all model’s parameters
@@ -315,10 +315,10 @@ SE for all model’s parameters
 (fit_mpl_2$fit$sdr$par.fixed-fit_mpl_3$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$sdr$cov.fixed))*100
 ```
 
-    ##         beta         beta         beta         beta         beta        theta 
-    ## -0.033364739  0.027908284  0.006830284 -0.017427823 -0.030092842  0.140516868 
-    ##        theta        theta        theta 
-    ##  0.030918940  0.017866347 -0.004162099
+    ##          beta          beta          beta          beta          beta 
+    ##  0.0141385610  0.0040430612  0.0008417167 -0.0113101846 -0.0390691698 
+    ##         theta         theta         theta         theta 
+    ##  0.0251751057  0.0251410604 -0.0024563553 -0.0022123409
 
 ``` r
 fit_mpl_3$fit$sdr
@@ -326,16 +326,16 @@ fit_mpl_3$fit$sdr
 
     ## sdreport(.) result
     ##          Estimate Std. Error
-    ## beta  -1.95654126  0.6057950
-    ## beta  -1.54905498  1.4020412
-    ## beta  -0.88215386  3.3831690
-    ## beta   2.22010774  1.5326498
-    ## beta  -0.06651074  0.5686943
-    ## theta -0.97664658  0.8605040
-    ## theta -0.12709856  0.9624175
-    ## theta -0.44249614  3.8629408
-    ## theta -0.48508920  0.4891596
-    ## Maximum gradient component: 0.9150307
+    ## beta  -1.95670216  0.6064690
+    ## beta  -1.54891734  1.4027248
+    ## beta  -0.88190821  3.3832918
+    ## beta   2.22009187  1.5327450
+    ## beta  -0.06647157  0.5688957
+    ## theta -0.97612770  0.8602964
+    ## theta -0.12705925  0.9635205
+    ## theta -0.44207694  3.8702067
+    ## theta -0.48509930  0.4892114
+    ## Maximum gradient component: 0.9151992
 
 ``` r
 summary(fit_mpl_3$fit)
@@ -353,18 +353,18 @@ summary(fit_mpl_3$fit)
     ## 
     ## Conditional model:
     ##  Groups    Name          Variance Std.Dev. Corr  
-    ##  grouping1 Z1(Intercept) 0.1418   0.3766         
-    ##            Z1migration   0.7755   0.8806   -0.40 
+    ##  grouping1 Z1(Intercept) 0.1420   0.3768         
+    ##            Z1migration   0.7756   0.8807   -0.40 
     ##  grouping2 Z2            0.3790   0.6156         
     ## Number of obs: 378, groups:  grouping1, 14; grouping2, 48
     ## 
     ## Conditional model:
     ##              Estimate Std. Error z value Pr(>|z|)   
-    ## X(Intercept) -1.95654    0.60580  -3.230  0.00124 **
-    ## Xmigration   -1.54905    1.40204  -1.105  0.26922   
-    ## Xfoods       -0.88215    3.38317  -0.261  0.79429   
-    ## Xfoodv        2.22011    1.53265   1.449  0.14747   
-    ## Xfoodz       -0.06651    0.56869  -0.117  0.90690   
+    ## X(Intercept) -1.95670    0.60647  -3.226  0.00125 **
+    ## Xmigration   -1.54892    1.40272  -1.104  0.26950   
+    ## Xfoods       -0.88191    3.38329  -0.261  0.79435   
+    ## Xfoodv        2.22009    1.53274   1.448  0.14749   
+    ## Xfoodz       -0.06647    0.56890  -0.117  0.90698   
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -396,18 +396,18 @@ summary(fit_mpl_4$fit)
     ## 
     ## Conditional model:
     ##  Groups    Name          Variance Std.Dev. Corr  
-    ##  grouping1 Z1(Intercept) 0.1419   0.3767         
+    ##  grouping1 Z1(Intercept) 0.1421   0.3769         
     ##            Z1migration   0.7768   0.8814   -0.41 
     ##  grouping2 Z2            0.3523   0.5935         
     ## Number of obs: 378, groups:  grouping1, 14; grouping2, 48
     ## 
     ## Conditional model:
     ##              Estimate Std. Error z value Pr(>|z|)   
-    ## X(Intercept) -1.94664    0.60921  -3.195   0.0014 **
-    ## Xmigration   -1.54581    1.41090  -1.096   0.2732   
-    ## Xfoods       -0.87966    3.37982  -0.260   0.7947   
-    ## Xfoodv        2.20928    1.52384   1.450   0.1471   
-    ## Xfoodz       -0.06802    0.56237  -0.121   0.9037   
+    ## X(Intercept)  -1.9468     0.6099  -3.192  0.00141 **
+    ## Xmigration    -1.5456     1.4117  -1.095  0.27356   
+    ## Xfoods        -0.8796     3.3801  -0.260  0.79469   
+    ## Xfoodv         2.2093     1.5239   1.450  0.14713   
+    ## Xfoodz        -0.0680     0.5626  -0.121  0.90379   
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -417,13 +417,13 @@ fit_mpl_4$fit$sdr
 
     ## sdreport(.) result
     ##          Estimate Std. Error
-    ## beta  -1.94664034  0.6092142
-    ## beta  -1.54580765  1.4108966
-    ## beta  -0.87966236  3.3798197
-    ## beta   2.20927865  1.5238398
-    ## beta  -0.06802475  0.5623721
-    ## theta -0.97623609  0.8563728
-    ## theta -0.12627366  0.9765183
-    ## theta -0.44361494  3.9169984
-    ## theta -0.52166366  0.5027700
-    ## Maximum gradient component: 0.9081954
+    ## beta  -1.94679055  0.6099508
+    ## beta  -1.54561324  1.4116598
+    ## beta  -0.87959539  3.3800705
+    ## beta   2.20925762  1.5239092
+    ## beta  -0.06800417  0.5625925
+    ## theta -0.97570857  0.8561768
+    ## theta -0.12625745  0.9777711
+    ## theta -0.44319769  3.9250260
+    ## theta -0.52166480  0.5028224
+    ## Maximum gradient component: 0.9083569

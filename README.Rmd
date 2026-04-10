@@ -108,7 +108,7 @@ fit_mpl_3<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|speci
                       control=AUGglmmTMBControl(fit_pGLM = TRUE,maxiter = 1,tol=1e-5,save_coef=TRUE)   )
 ```
 
-which gives very similar results than the exact implementation based on Algorithm 1: the difference between the two procedures relative to the SE obtained by the exact procedure is smaller than 1% of the estimated SE for all model's parameters
+which gives very similar results as the exact implementation based on Algorithm 1: the difference between the two procedures relative to the SE obtained by the exact procedure is smaller than 1% of the estimated SE for all model's parameters
 ```{r}
 (fit_mpl_2$fit$sdr$par.fixed-fit_mpl_3$fit$sdr$par.fixed)/sqrt(diag(fit_mpl_2$fit$sdr$cov.fixed))*100
 fit_mpl_3$fit$sdr
