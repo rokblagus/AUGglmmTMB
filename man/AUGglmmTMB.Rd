@@ -60,7 +60,7 @@ A list with elements:
   \item{fit}{The fitted penalized GLMM object of class \code{\link{glmmTMB}}.}
   \item{loglik}{The unpenalized marginal log-likelihood.}
   \item{coefs}{If \code{save_coef=TRUE}, a list with elements \code{coefs_glmm} and \code{coefs_glm}
-  (corresponding to the matrices of GLMM and GLM parameters, respectively), otherwise \code{NULL}.}
+  (corresponding to the matrices of GLMM and GLM parameters by iteration, respectively), otherwise \code{NULL}.}
   \item{optre}{If \code{autrepen = TRUE}, a list with elements \code{opt_tau} and \code{opt_psi}
   (corresponding to the estimated penalty parameter \eqn{\tau} and penalty matrix \eqn{\Psi}, respectively), otherwise \code{NULL}.}
 }

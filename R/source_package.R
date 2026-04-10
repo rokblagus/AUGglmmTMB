@@ -286,17 +286,24 @@ make_pd_fix<-function(data,cfe,fix_beta,link_fun){
 
   omega<-c(get_omega(lp))
 
-  W<-diag(data$W*data$M*omega)
+
+  #W<-diag(data$W*data$M*omega)
   #Xw <- (W %^% 0.5) %*% data$X
-  Xw <- sqrt(W ) %*% data$X #faster?
-  qrXw <- qr(Xw)
-  H <- tcrossprod(qr.Q(qrXw))
-  hi<-diag(H)
+  #Vs<-diag(sqrt(data$W*data$M*omega)) #include sqrt here to avoid ^
+  #Xw <-  Vs   %*% data$X #faster? yes, up to 10 times, depending on n
+  #qrXw <- qr(Xw)
+  #H <- tcrossprod(qr.Q(qrXw))
+  #hi<-diag(H)
+#even faster, more stable?
+  #w <- sqrt(diag(W))
+  Vs<-sqrt(data$W*data$M*omega)
+  Q <- qr.Q(qr(data$X * Vs))
+  hi <- rowSums(Q^2)
 
   W<-c(data$W,hi*cfe/data$M,hi*cfe/data$M)
 mud<-get_mu(lp)
   #dp<-data$M*get_d_primeomega(lp)+2*get_mu(lp)-1
-  dp<-data$M*get_d_primeomega(lp)+2*mud-1
+  dp<-data$M*(get_d_primeomega(lp)+2*mud-1)
   #y1<-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
   #y2<-data$M-data$Y+data$M*(get_d_primeomega(lp)+2*get_mu(lp)-1)
   y1<-data$Y+dp
@@ -1434,7 +1441,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'   \item{fit}{The fitted penalized GLMM object of class \code{\link{glmmTMB}}.}
 #'   \item{loglik}{The unpenalized marginal log-likelihood.}
 #'   \item{coefs}{If \code{save_coef=TRUE}, a list with elements \code{coefs_glmm} and \code{coefs_glm}
-#'   (corresponding to the matrices of GLMM and GLM parameters, respectively), otherwise \code{NULL}.}
+#'   (corresponding to the matrices of GLMM and GLM parameters by iteration, respectively), otherwise \code{NULL}.}
 #'   \item{optre}{If \code{autrepen = TRUE}, a list with elements \code{opt_tau} and \code{opt_psi}
 #'   (corresponding to the estimated penalty parameter \eqn{\tau} and penalty matrix \eqn{\Psi}, respectively), otherwise \code{NULL}.}
 #' }
