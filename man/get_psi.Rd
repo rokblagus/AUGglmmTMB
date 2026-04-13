@@ -9,6 +9,7 @@ get_psi(
   cfe,
   nu,
   fit_pGLM = FALSE,
+  method_pGLM = "brglm2",
   maxiter = 50,
   tol = 1e-06,
   link_fun = "logit",
@@ -26,6 +27,8 @@ get_psi(
 for details.}
 
 \item{fit_pGLM}{Logical. Indicates whether Algorithm 2 (\code{TRUE}) or Algorithm 1 (\code{FALSE}) is used. Default is \code{FALSE}.}
+
+\item{method_pGLM}{Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.}
 
 \item{maxiter}{Integer. Maximum number of iterations. Default is \code{50}.}
 
@@ -67,7 +70,7 @@ Y<-birds$parasites
 X <- model.matrix(parasites~migration+food, birds)
 Z1<-model.matrix(parasites~migration, birds)
 Z2<-model.matrix(parasites~1, birds)
-grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+grouping1<-as.numeric(as.factor(birds$phylogenetic))
 grouping2<-as.numeric(as.factor(birds$species))
 xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
   grouping=list(grouping1,grouping2),

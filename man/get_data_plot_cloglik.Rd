@@ -10,6 +10,7 @@ get_data_plot_cloglik(
   nu,
   n_taus,
   fit_pGLM = FALSE,
+  method_pGLM = "brglm2",
   maxiter = 50,
   tol = 1e-06,
   link_fun = "logit",
@@ -31,6 +32,8 @@ and random-effects structures (\code{Z}, \code{grouping}).}
 \eqn{\tau} in the interval [0, 1].}
 
 \item{fit_pGLM}{Logical. If \code{TRUE}, uses Algorithm 2; otherwise uses Algorithm 1.}
+
+\item{method_pGLM}{Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.}
 
 \item{maxiter}{Integer. Maximum number of iterations for the fitting procedure.}
 

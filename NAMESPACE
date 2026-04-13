@@ -10,6 +10,7 @@ export(AUGglmmTMBPenalty)
 export(AUGglmmTMBControl)
 import(brglm2)
 import(glmmTMB)
+import(logistf)
 importFrom("stats", "binomial", "dnorm", "formula", "glm", "optimise",
                 "plogis", "pnorm", "predict", "uniroot", "vcov","na.omit","as.formula","model.matrix",
            "model.frame","model.response","model.weights")
@@ -17,3 +18,4 @@ importFrom("brglm2","brglmFit")
 importFrom("lme4","namedList")
 importFrom("reformulas","nobars","findbars")
 importFrom("graphics", "abline","plot")
+importFrom("logistf", "logistf")

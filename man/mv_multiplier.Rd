@@ -28,7 +28,7 @@ Y<-birds$parasites
 X <- model.matrix(parasites~migration+food, birds)
 Z1<-model.matrix(parasites~migration, birds)
 Z2<-model.matrix(parasites~1, birds)
-grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+grouping1<-as.numeric(as.factor(birds$phylogenetic))
 grouping2<-as.numeric(as.factor(birds$species))
 xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
   grouping=list(grouping1,grouping2),

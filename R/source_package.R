@@ -41,7 +41,7 @@
 #' X <- model.matrix(parasites~migration+food, birds)
 #' Z1<-model.matrix(parasites~migration, birds)
 #' Z2<-model.matrix(parasites~1, birds)
-#' grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+#' grouping1<-as.numeric(as.factor(birds$phylogenetic))
 #' grouping2<-as.numeric(as.factor(birds$species))
 #' xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
 #'   grouping=list(grouping1,grouping2),
@@ -168,7 +168,7 @@ restructure_data<-function(data){
 #' X <- model.matrix(parasites~migration+food, birds)
 #' Z1<-model.matrix(parasites~migration, birds)
 #' Z2<-model.matrix(parasites~1, birds)
-#' grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+#' grouping1<-as.numeric(as.factor(birds$phylogenetic))
 #' grouping2<-as.numeric(as.factor(birds$species))
 #' xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
 #'   grouping=list(grouping1,grouping2),
@@ -499,7 +499,7 @@ make_pseudo_data_rand<-function(psi,nu,const=1e8,param="precision",inv_link_fun=
 #' X <- model.matrix(parasites~migration+food, birds)
 #' Z1<-model.matrix(parasites~migration, birds)
 #' Z2<-model.matrix(parasites~1, birds)
-#' grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+#' grouping1<-as.numeric(as.factor(birds$phylogenetic))
 #' grouping2<-as.numeric(as.factor(birds$species))
 #' xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
 #'   grouping=list(grouping1,grouping2),
@@ -690,7 +690,7 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #' only to the first \code{length(nu)} random-effects terms.
 #'
 #' @param fit_pGLM Logical. If \code{TRUE}, uses Algorithm 2; if \code{FALSE}, uses Algorithm 1. Default is \code{FALSE}.
-#'
+#' @param method_pGLM Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.
 #' @param maxiter Integer. Maximum number of iterations. Default is \code{50}
 #'
 #' @param tol Numeric. Convergence tolerance based on changes in the parameter
@@ -737,7 +737,7 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #' X <- model.matrix(parasites~migration+food, birds)
 #' Z1<-model.matrix(parasites~migration, birds)
 #' Z2<-model.matrix(parasites~1, birds)
-#' grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+#' grouping1<-as.numeric(as.factor(birds$phylogenetic))
 #' grouping2<-as.numeric(as.factor(birds$species))
 #' xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
 #'   grouping=list(grouping1,grouping2),
@@ -778,7 +778,8 @@ my_pen_glm<-function(data,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FAL
 #' @export
 
 
-mpl_fitter<-function(data,cfe,nu,psi,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=TRUE){
+mpl_fitter<-function(data,cfe,nu,psi,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=TRUE){
+
   if (link_fun=="cauchit") stop("Cauchit link is currently not supported by glmmTMB")
   if (link_fun=="loglog") stop("Loglog link is currently not supported by glmmTMB")
   if (is.null(data$Y)) stop("data must be a list, element Y is missing")
@@ -788,6 +789,17 @@ mpl_fitter<-function(data,cfe,nu,psi,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun
   if (is.null(data$W)) data$W<-rep(1,length(data$Y)) #stop("data must be a list, element W is missing")
   if (is.null(data$grouping)) stop("data must be a list, element grouping is missing")
 if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.")
+  if (!(method_pGLM %in% c("brglm2", "logistf"))) {
+    stop("Invalid method_pGLM: must be either 'brglm2' or 'logistf'.")
+  }
+  if (link_fun!="logit"&method_pGLM=="logistf"){
+    method_pGLM=="brglm2"
+    warning("Cannot fit pGLM with 'logistf' for the specified link function; fitting the pGLM with 'brglm2'.")
+  }
+  if (method_pGLM=="logistf"&max(data$M)>1){
+    method_pGLM=="brglm2"
+    warning("Cannot fit pGLM with 'logistf' for binomial outcomes; fitting the pGLM with 'brglm2'.")
+  }
   formula_fit<-make_formula(data)
   data<-restructure_data(data)
   if (cfe==0) maxiter<-1
@@ -798,12 +810,16 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
   if (fit_pGLM) {
     if (ii==1) data$o<-rep(0,length(data$Y))
     data2<-data
+    if (method_pGLM=="brglm2"){
     data2$Y<-data2$Y*data2$W
     data2$M<-data2$M*data2$W
     #firth<-glm(cbind(Y,M-Y)~-1+X+offset(o),data=data2,family=binomial(link=link_fun),method="brglmFit",type="MPL_Jeffreys",a=cfe)
-    firth<-glm(cbind(Y,M-Y)~-1+X+offset(o),data=data2,family=binomial(link=link_fun),method=brglm2::brglmFit,type="MPL_Jeffreys",a=cfe)
-    #firth<-my_pen_glm(data2,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FALSE)
 
+      firth<-glm(cbind(Y,M-Y)~-1+X+offset(o),data=data2,family=binomial(link=link_fun),method=brglm2::brglmFit,type="MPL_Jeffreys",a=cfe)
+    #firth<-my_pen_glm(data2,cfe,maxIter=15,tol=1e-9,link_fun="logit",save_coef=FALSE)
+    } else {
+      firth<-logistf(Y~-1+X,data=data2,weights = data2$W,offset = data2$o,pl=FALSE,model=FALSE,modcontrol=logistf.mod.control(tau=cfe))
+    }
     beta_fix<-firth$coefficients
    # beta_fix[beta_fix>1e5]<-1e5
   #  beta_fix[beta_fix<(-1e5)]<--1e5
@@ -954,6 +970,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 #' @param nu Penalty parameter for the random effects. See \code{mpl_fitter}
 #' for details.
 #' @param fit_pGLM Logical. Indicates whether Algorithm 2 (\code{TRUE}) or Algorithm 1 (\code{FALSE}) is used. Default is \code{FALSE}.
+#' @param method_pGLM Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.
 #' @param maxiter Integer. Maximum number of iterations. Default is \code{50}.
 #' @param tol Numeric. Convergence tolerance. Default is \code{1e-6}.
 #' @param link_fun Character. Link function. Default is \code{"logit"}.
@@ -985,7 +1002,7 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 #' X <- model.matrix(parasites~migration+food, birds)
 #' Z1<-model.matrix(parasites~migration, birds)
 #' Z2<-model.matrix(parasites~1, birds)
-#' grouping1<-as.numeric(as.factor(birds$Phylogenetic.Tomi))
+#' grouping1<-as.numeric(as.factor(birds$phylogenetic))
 #' grouping2<-as.numeric(as.factor(birds$species))
 #' xdf<-list(Y=Y,X=X,Z=list(Z1,Z2),
 #'   grouping=list(grouping1,grouping2),
@@ -1000,9 +1017,9 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
 #' @export
 
 
-get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=FALSE){
+get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=FALSE){
 
-  fit0<-mpl_fitter(data,cfe=cfe,nu=NULL,psi=NULL,fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+  fit0<-mpl_fitter(data,cfe=cfe,nu=NULL,psi=NULL,fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
   D_est<-VarCorr(fit0$fit)$cond[[1]]
 
@@ -1057,7 +1074,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 
 
 
-  fit_rok1<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+  fit_rok1<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
 
   lik0<-get_cond_lik(fit_rok1$fit,data$Y)
@@ -1076,7 +1093,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
     if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
-    fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+    fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
     -get_cond_lik(fit_rok$fit,data$Y)
 
   }
@@ -1086,7 +1103,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
     if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
-    fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+    fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
     abs(get_cond_lik(fit_rok$fit,data$Y)-lik0)-lim
 
   }
@@ -1142,6 +1159,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 #' @param n_taus Integer. Number of grid points for the shrinkage parameter
 #'   \eqn{\tau} in the interval [0, 1].
 #' @param fit_pGLM Logical. If \code{TRUE}, uses Algorithm 2; otherwise uses Algorithm 1.
+#' @param method_pGLM Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.
 #' @param maxiter Integer. Maximum number of iterations for the fitting procedure.
 #' @param tol Numeric. Convergence tolerance for parameter estimates.
 #' @param link_fun Character. Link function to use. Options include
@@ -1205,9 +1223,9 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit
 #' }
 #' @export
 
-get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=FALSE){
+get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=FALSE){
 
-  fit0<-mpl_fitter(data,cfe=cfe,nu=NULL,psi=NULL,fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+  fit0<-mpl_fitter(data,cfe=cfe,nu=NULL,psi=NULL,fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
   D_est<-VarCorr(fit0$fit)$cond[[1]]
 
@@ -1261,7 +1279,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,maxiter=50,tol
 
 
 
-  fit_rok1<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+  fit_rok1<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
 
   lik0<-get_cond_lik(fit_rok1$fit,data$Y)
@@ -1280,7 +1298,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,maxiter=50,tol
     if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
 
 
-    fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
+    fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
     -get_cond_lik(fit_rok$fit,data$Y)
 
   }
@@ -1310,6 +1328,7 @@ list(taus=seq_tau,cloglik=c_lik,se=lim)
 #'
 #' @param fit_pGLM Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
 #'   in Košuta et al.), otherwise it uses Algorithm 1. Default is \code{FALSE}.
+#' @param method_pGLM Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.
 #' @param maxiter Integer. Maximum number of iterations for the penalized likelihood
 #'   fitting procedure. Default is 50.
 #' @param tol Numeric. Convergence tolerance based on changes in parameter estimates.
@@ -1337,13 +1356,14 @@ list(taus=seq_tau,cloglik=c_lik,se=lim)
 #' @export
 
 AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
+                              method_pGLM="brglm2",
                               maxiter    = 50,
                               tol        = 1e-6,
                               save_coef  = FALSE,
                               inter_iter = 1e3,
                               use_previous = FALSE) {
 
-  namedList(fit_pGLM,maxiter,tol,save_coef,inter_iter,use_previous)
+  namedList(fit_pGLM,method_pGLM,maxiter,tol,save_coef,inter_iter,use_previous)
 }
 
 #' Create penalty options for AUGglmmTMB
@@ -1424,6 +1444,10 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #' \describe{
 #' \item{\code{fit_pGLM}}{Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
 #'   in Košuta et al.), otherwise it uses Algorithm 1. Default is \code{FALSE}.}
+#' \item{\code{method_pGLM}}{Character. The method to be used when fitting penalized GLM.
+#' Currently supported values are \code{"brglm2"} and \code{"logistf"}.
+#' \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}.
+#' Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.}
 #' \item{\code{maxiter}}{Integer. Maximum number of iterations for the penalized likelihood
 #'   fitting procedure. Default is 50.}
 #' \item{\code{tol}}{Numeric. Convergence tolerance based on changes in parameter estimates.
@@ -1640,7 +1664,9 @@ AUGglmmTMB<-function(formula,data,weights=NULL,link="logit",
 
   if (penOpt$autrepen){
     q<-ncol(data_mpl$Z[[1]])
-    psi_opt<-suppressMessages(suppressWarnings(get_psi(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,
+    psi_opt<-suppressMessages(suppressWarnings(get_psi(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),fit_pGLM=control$fit_pGLM,
+                                                       method_pGLM=control$method_pGLM,
+                                                       maxiter=control$maxiter,
                                                        tol=control$tol,link_fun=link_fun,
                      save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 
@@ -1649,10 +1675,13 @@ AUGglmmTMB<-function(formula,data,weights=NULL,link="logit",
 
     fit<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
                     cfe=penOpt$cfe,nu=list(2*q-1),psi=list(opt_psi),
-                    fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                    fit_pGLM=control$fit_pGLM,method_pGLM=control$method_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
                     save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 if (penOpt$plot){
-  psi_taus<-suppressMessages(suppressWarnings(get_data_plot_cloglik(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),n_taus=penOpt$ntaus,fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,
+  psi_taus<-suppressMessages(suppressWarnings(get_data_plot_cloglik(data=data_mpl,cfe=penOpt$cfe,nu=list(2*q-1),n_taus=penOpt$ntaus,
+                                                                    fit_pGLM=control$fit_pGLM,
+                                                                    method_pGLM=control$method_pGLM,
+                                                                    maxiter=control$maxiter,
                                   tol=control$tol,link_fun=link_fun,save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 
   plot(psi_taus$taus,psi_taus$cloglik,type="l",xlab="tau",ylab="conditional log-likelihood")
@@ -1666,7 +1695,9 @@ if (penOpt$plot){
     opt_psi<-NULL
     fit<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
                     cfe=penOpt$cfe,nu=penOpt$nu,psi=penOpt$psi,
-                    fit_pGLM=control$fit_pGLM,maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                    fit_pGLM=control$fit_pGLM,
+                    method_pGLM=control$method_pGLM,
+                    maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
                     save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
   }
 

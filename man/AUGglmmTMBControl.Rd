@@ -6,6 +6,7 @@
 \usage{
 AUGglmmTMBControl(
   fit_pGLM = FALSE,
+  method_pGLM = "brglm2",
   maxiter = 50,
   tol = 1e-06,
   save_coef = FALSE,
@@ -16,6 +17,8 @@ AUGglmmTMBControl(
 \arguments{
 \item{fit_pGLM}{Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
 in Košuta et al.), otherwise it uses Algorithm 1. Default is \code{FALSE}.}
+
+\item{method_pGLM}{Character. The method to be used when fitting penalized GLM. Currently supported values are \code{"brglm2"} and \code{"logistf"}. \code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}. Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.}
 
 \item{maxiter}{Integer. Maximum number of iterations for the penalized likelihood
 fitting procedure. Default is 50.}

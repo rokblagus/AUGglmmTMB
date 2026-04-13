@@ -42,6 +42,10 @@ observation weights. Default is \code{NULL}, in which case all weights are 1.}
 \describe{
 \item{\code{fit_pGLM}}{Logical. If \code{TRUE}, uses the penalized GLM step (Algorithm 2
   in Košuta et al.), otherwise it uses Algorithm 1. Default is \code{FALSE}.}
+\item{\code{method_pGLM}}{Character. The method to be used when fitting penalized GLM.
+Currently supported values are \code{"brglm2"} and \code{"logistf"}.
+\code{"logistf"} can only be used for Bernoulli outcomes when \code{link_fun="logit"}.
+Ignored when \code{fit_pGLM=FALSE}. Defaults to \code{"brglm2"}.}
 \item{\code{maxiter}}{Integer. Maximum number of iterations for the penalized likelihood
   fitting procedure. Default is 50.}
 \item{\code{tol}}{Numeric. Convergence tolerance based on changes in parameter estimates.

@@ -12,7 +12,8 @@ Imports:
   brglm2,
   glmmTMB,
   lme4,
-  reformulas
+  reformulas,
+  logistf
 RoxygenNote: 7.3.2
 Depends: 
     R (>= 3.5)
