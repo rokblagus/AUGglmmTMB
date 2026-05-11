@@ -800,6 +800,12 @@ if (!is.null(nu)) if (!is.list(nu)) stop("Arguments nu and psi need to be lists.
     method_pGLM=="brglm2"
     warning("Cannot fit pGLM with 'logistf' for binomial outcomes; fitting the pGLM with 'brglm2'.")
   }
+
+  if (method_pGLM=="logistf"&length(unique(data$Y))>2){
+    method_pGLM=="brglm2"
+    warning("Cannot fit pGLM with 'logistf' for outcomes with more than 2 values; fitting the pGLM with 'brglm2'.")
+  }
+
   formula_fit<-make_formula(data)
   data<-restructure_data(data)
   if (cfe==0) maxiter<-1
@@ -1685,7 +1691,7 @@ if (penOpt$plot){
                                   tol=control$tol,link_fun=link_fun,save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
 
   plot(psi_taus$taus,psi_taus$cloglik,type="l",xlab="tau",ylab="conditional log-likelihood")
-  if (psi_taus$cloglik[1]<psi_taus$cloglik[2])  lm<-psi_taus$cloglik[1]+psi_taus$se else psi_taus$cloglik[1]-psi_taus$se
+  if (psi_taus$cloglik[1]<psi_taus$cloglik[2])  lm<-psi_taus$cloglik[1]+psi_taus$se else lm<-psi_taus$cloglik[1]-psi_taus$se
   abline(h=lm,lty=3,col="red")
    abline(v=psi_opt$tau,lty=3,col="blue")
 
