@@ -1030,7 +1030,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
   D_est<-VarCorr(fit0$fit)$cond[[1]]
 
 
-  get_cond_lik<-function(model,Y){
+  get_cond_lik<-function(model,Y,M,W){
 
     p_hat<-predict(model,type="response")[1:length(Y)]
 
@@ -1040,7 +1040,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
     p1[p1<(-1e5)]<-(-1e5)
     p2[p2<(-1e5)]<-(-1e5)
 
-    sum(  Y*p1+(1-Y)*p2  )
+    sum(  W*(Y*p1+(M-Y)*p2  ))
 
   }
 
@@ -1048,12 +1048,12 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
 
 
 
-  get_lim<-function(model,Y,X){
+  get_lim<-function(model,Y,X,M,W){
 
 
     p_hat<-predict(model,type="response")[1:length(Y)]
 
-    dl_deta<-Y-p_hat
+    dl_deta<-W*(Y-p_hat*M)
 
 
     grad_beta <- t(X) %*% dl_deta
@@ -1083,13 +1083,13 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
   fit_rok1<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
 
-  lik0<-get_cond_lik(fit_rok1$fit,data$Y)
+  lik0<-get_cond_lik(fit_rok1$fit,data$Y,data$M,data$W)
 
 
 
 
 
-  lim<-get_lim(fit_rok1$fit,data$Y,data$X) #1SE rule
+  lim<-get_lim(fit_rok1$fit,data$Y,data$X,data$M,data$W) #1SE rule
 
 
 
@@ -1100,7 +1100,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
 
 
     fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
-    -get_cond_lik(fit_rok$fit,data$Y)
+    -get_cond_lik(fit_rok$fit,data$Y,data$M,data$W)
 
   }
 
@@ -1110,7 +1110,7 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
 
 
     fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
-    abs(get_cond_lik(fit_rok$fit,data$Y)-lik0)-lim
+    abs(get_cond_lik(fit_rok$fit,data$Y,data$M,data$W)-lik0)-lim
 
   }
 
@@ -1236,7 +1236,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="b
   D_est<-VarCorr(fit0$fit)$cond[[1]]
 
 
-  get_cond_lik<-function(model,Y){
+  get_cond_lik<-function(model,Y,M,W){
 
     p_hat<-predict(model,type="response")[1:length(Y)]
 
@@ -1246,19 +1246,19 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="b
     p1[p1<(-1e5)]<-(-1e5)
     p2[p2<(-1e5)]<-(-1e5)
 
-    sum(  Y*p1+(1-Y)*p2  )
+    sum( W* (Y*p1+(M-Y)*p2)  )
 
   }
 
 
 
 
-  get_lim<-function(model,Y,X){
+  get_lim<-function(model,Y,X,M,W){
 
 
     p_hat<-predict(model,type="response")[1:length(Y)]
 
-    dl_deta<-Y-p_hat
+    dl_deta<-W*(Y-p_hat*M)
 
 
     grad_beta <- t(X) %*% dl_deta
@@ -1266,7 +1266,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="b
 
     vcov_beta <- vcov(model)$cond
     if (any(is.na(vcov_beta))) vcov_beta<-4*diag(1,ncol(X),ncol(X))
-    if (any(diag(vcov_beta<0))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #res from Kos
+    if (any(diag(vcov_beta<0))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #res from Kos (does not use W and M!)
     sqrt(t(grad_beta)%*%vcov_beta%*%grad_beta)
 
 
@@ -1288,13 +1288,13 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="b
   fit_rok1<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
 
-  lik0<-get_cond_lik(fit_rok1$fit,data$Y)
+  lik0<-get_cond_lik(fit_rok1$fit,data$Y,data$M,data$W)
 
 
 
 
 
-  lim<-get_lim(fit_rok1$fit,data$Y,data$X) #1SE rule
+  lim<-get_lim(fit_rok1$fit,data$Y,data$X,data$M,data$W) #1SE rule
 
 
 
@@ -1305,7 +1305,7 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="b
 
 
     fit_rok<-mpl_fitter(data,cfe=cfe,nu=nu,psi=list(psi0),fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
-    -get_cond_lik(fit_rok$fit,data$Y)
+    -get_cond_lik(fit_rok$fit,data$Y,data$M,data$W)
 
   }
 
