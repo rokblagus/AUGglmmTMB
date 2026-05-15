@@ -130,5 +130,37 @@ fit_mpl_4$fit$sdr
 
 ```
 
+The penalty for the random effects covariance matrices, can be specified also via the argument `tau`, as illustrated in the following example. We can set the penalty on the 1st random effect only by specifying `tau` (here we used the optimal value as obtained above)
 
+```{r}
+fit_mpl_5<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,tau=list(fit_mpl_2$optre$tau)),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
 
+As expected, this gives the same estimates as `fit_mpl_2`
+```{r}
+all.equal(fit_mpl_2$fit$fit$par,fit_mpl_5$fit$fit$par)
+```
+
+We can increase the penalty strength by increasing  `tau` 
+```{r}
+fit_mpl_6<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,tau=list(0.5)),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
+As expected, this pools the estimated random effects covariance matrix closer to the shrinkage target ($3q\mathbf{I}_q$).
+```{r}
+VarCorr(fit_mpl_5$fit)$cond$grouping1[1:2,1:2]
+VarCorr(fit_mpl_6$fit)$cond$grouping1[1:2,1:2]
+```
+
+We can also apply penalties to both random effects, and control their strength via `tau`. For example,
+```{r}
+fit_mpl_7<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,tau=list(0.5,0.8)),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
+```{r}
+summary(fit_mpl_7$fit)
+```

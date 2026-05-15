@@ -1449,6 +1449,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #'       When \code{TRUE}, the penalty is only applied to the 1st random effect.
 #' @param nu Optional list of numeric vectors specifying random-effects penalty parameters (degrees of freedom). If not \code{NULL}, \code{nu} must be a list in which each element is a single numeric value. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Ignored when \code{autrepen=TRUE}. Default is \code{NULL} in which case the random effects are not penalized.
 #' @param psi Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.
+#' @param tau Optional list of penalty parameters. Ignored when \code{autrepen=TRUE} and when \code{nu} is not null. When specified, this has to be the list of numeric values in [0,1]; the list can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(tau)} random effects. Default is \code{NULL}.
 #' @param plot Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.
 #' @param ntaus Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.
 #'
@@ -1458,7 +1459,7 @@ AUGglmmTMBControl <- function(fit_pGLM   = FALSE,
 #' This function does not perform any fitting itself. It simply returns a structured list
 #' that specifies how \code{\link{AUGglmmTMB}} should apply penalties to fixed and random effects.
 #' Use this function to easily create the \code{penOpt} argument for \code{\link{AUGglmmTMB}}.
-#' Setting \code{autrepen=FALSE} and \code{nu=NULL} turns off the penalty on the random effects covariance matrices.
+#' Setting \code{autrepen=FALSE}, \code{nu=NULL}, and \code{tau=NULL} turns off the penalty on the random effects covariance matrices.
 #'
 #' @examples
 #' # Default penalty on the fixed effects, no penalty on the random effects
@@ -1480,9 +1481,10 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
                             autrepen=FALSE,
                             nu=NULL,
                             psi=NULL,
+                            tau=NULL,
                             plot=FALSE,ntaus=50){
 
-  namedList(cfe,autrepen,nu,psi,plot,ntaus)
+  namedList(cfe,autrepen,nu,psi,tau,plot,ntaus)
 }
 
 
@@ -1508,6 +1510,7 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #'       penalty parameters \eqn{\tau} and \eqn{\Psi} using the procedure described in Košuta et al (see also \code{\link{get_psi}}). When \code{TRUE}, the penalty is only applied to the 1st random effect. Default is \code{FALSE}.}
 #'     \item{\code{nu}}{Optional list specifying random-effects penalty parameters. Ignored when \code{autrepen=TRUE}. Can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(nu)} random effects. Default is \code{NULL} in which case the random effects are not penalized.}
 #'     \item{\code{psi}}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
+#'    \item{\code{tau}}{Optional list of penalty parameters. Ignored when \code{autrepen=TRUE} and when \code{nu} is not null. When specified, this has to be the list of numeric values in [0,1]; the list can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(tau)} random effects. Default is \code{NULL}.}
 #'   \item{\code{plot}}{Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
 #'   \item{\code{ntaus}}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
 #'   }
@@ -1542,11 +1545,13 @@ AUGglmmTMBPenalty<-function(cfe=NULL,
 #' }
 #' @details
 #' Setting \code{autrepen=TRUE} uses the data-driven procedure proposed by Košuta et al. to determine the penalty parameters; the parameter \code{nu} is set to \eqn{2q-1} internally, any other value supplied in \code{nu} is ignored.
-#' If \code{autrepen=FALSE} and \code{nu=NULL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
+#' If \code{autrepen=FALSE}, \code{nu=NULL}, and \code{tau=NULLL}, no random-effects penalty is applied and only the fixed-effects penalty is used.
 #' When \code{autrepen=FALSE}, if provided, \code{nu} and \code{psi}, can be of the same length as the number of specified random effects, in which case
 #' the penalty is applied to all random effects. If shorter, the penalty is applied
-#' only to the first \code{length(nu)} random-effects terms. When specified, \code{nu} and \code{psi} need to be of the same length: each element of \code{nu} and \code{psi} are the penalty parameters \eqn{\tau} and \eqn{\Psi}, respectively, for the corresponding random effect. When specified, the elements of \code{psi} need to be matrices of appropriate dimensions.
-#'
+#' only to the first \code{length(nu)} random-effects terms. When specified, \code{nu} and \code{psi} need to be of the same length: each element of \code{nu} and \code{psi} are the penalty parameters \eqn{\nu} and \eqn{\Psi}, respectively, for the corresponding random effect. When specified, the elements of \code{psi} need to be matrices of appropriate dimensions.
+#' When \code{autrepen=FALSE} and \code{nu=NULL}, the penalty parameters of the random effects, can also be specified via the argument \code{tau}. This has to be a list, that can be of the same length as the number of specified random effects, in which case
+#' the penalty is applied to all random effects. If shorter, the penalty is applied
+#' only to the first \code{length(tau)} random-effects terms. When specified, each element of the list has to be a numeric value in [0,1]. For each element in the list, its respective random effects parameters are set to \eqn{2q-1} and \eqn{\bm{\Psi} = 3q \bm{T} \tilde{\bm{\Lambda}}_\tau \bm{T}^\top}, where \eqn{\bm{\bm\Sigma} = \bm{T} \bm{\Lambda} \bm{T}^\top}, \eqn{\bm{T} \bm{T}^\top = \bm{I}_q} and \eqn{\bm{\Lambda} = \operatorname{diag}(\lambda_1, \dots, \lambda_q)} with \eqn{\lambda_1 \geq \cdots \geq \lambda_q} being the eigenvalues of \eqn{\bm{\bm\Sigma}} and \eqn{\tilde{\bm{\Lambda}}(\tau)=\tilde{\bm{\Lambda}}_\tau} is a diagonal matrix with diagonal elements \eqn{\tilde{\lambda}_i = \lambda_i + \tau(1 - \lambda_i)}, \eqn{i=1,\ldots,q}, where \eqn{\tau \in [0,1]} is the shrinkage parameter set in \code{tau}. The decomposition is based on the estimate of \eqn{\bm\Sigma} obtained when only the fixed-effects penalty is applied.
 #'
 #' @seealso \code{\link{AUGglmmTMBPenalty}},\code{\link{AUGglmmTMBControl}}, \code{\link{get_psi}}, \code{\link{mpl_fitter}}
 #'
@@ -1614,7 +1619,7 @@ AUGglmmTMB<-function(formula,data,weights=NULL,link="logit",
                      penOpt=AUGglmmTMBPenalty(),
                      control=AUGglmmTMBControl()){
 
-
+if (!is.null(penOpt$tau)) {if (any(penOpt$tau<0)|any(penOpt$tau>1)) stop("The parameter tau needs to be in [0,1]")}
   data<-na.omit(data)
   formula<-as.formula(formula)
 
@@ -1764,13 +1769,63 @@ if (penOpt$plot){
   } else {
     opt_tau<-NULL
     opt_psi<-NULL
+
+    if (is.null(penOpt$tau)){
     fit<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
                     cfe=penOpt$cfe,nu=penOpt$nu,psi=penOpt$psi,
                     fit_pGLM=control$fit_pGLM,
                     method_pGLM=control$method_pGLM,
                     maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
                     save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
-  }
+
+    } else {
+      fit0<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
+                                                         cfe=penOpt$cfe,nu=NULL,psi=NULL,
+                                                         fit_pGLM=control$fit_pGLM,
+                                                         method_pGLM=control$method_pGLM,
+                                                         maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                                                         save_coef=FALSE,inter_iter=control$inter_iter,use_previous=control$use_previous)))
+      extract_cov_matrices <- function(fit) {
+
+        vc <- VarCorr(fit)$cond
+
+        cov_list <- lapply(vc, function(x) {
+          as.matrix(x)
+        })
+
+        return(cov_list)
+      }
+
+
+      list_est_cov<-extract_cov_matrices(fit0$fit)
+      psiss<-nus<-list()
+      for (ii in 1:length(penOpt$tau)){
+        D_est<-list_est_cov[[ii]]
+        q<-nrow(D_est)
+        tau=penOpt$tau[[ii]]
+        ee<-eigen(D_est)
+
+        lm<-1 #identity as the shrink target
+        li<-ee$values+tau*(lm-ee$values)
+        if (q>1) psi0<-ee$vectors%*%diag(li)%*%t(ee$vectors)*3*q else psi0<-ee$vectors%*%diag(li,1,1)%*%t(ee$vectors)*3*q
+        nu<-2*q-1
+
+        psiss[[ii]]<-psi0
+        nus[[ii]]<-nu
+
+      }
+
+      fit<-suppressMessages(suppressWarnings(mpl_fitter(data=data_mpl,
+                                                        cfe=penOpt$cfe,nu=nus,psi=psiss,
+                                                        fit_pGLM=control$fit_pGLM,
+                                                        method_pGLM=control$method_pGLM,
+                                                        maxiter=control$maxiter,tol=control$tol,link_fun=link_fun,
+                                                        save_coef=control$save_coef,inter_iter=control$inter_iter,use_previous=control$use_previous)))
+
+
+    }
+
+    }
 
   list(fit=fit$fit,loglik=fit$loglik,coefs=list(coefs_glmm=fit$coefs,coefs_glm=fit$coefs_glm),optre=list(tau=opt_tau,psi=opt_psi))
 

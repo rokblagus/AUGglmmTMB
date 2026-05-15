@@ -427,3 +427,89 @@ fit_mpl_4$fit$sdr
     ## theta -0.44319769  3.9250260
     ## theta -0.52166480  0.5028224
     ## Maximum gradient component: 0.9083569
+
+The penalty for the random effects covariance matrices, can be specified
+also via the argument `tau`, as illustrated in the following example. We
+can set the penalty on the 1st random effect only by specifying `tau`
+(here we used the optimal value as obtained above)
+
+``` r
+fit_mpl_5<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,tau=list(fit_mpl_2$optre$tau)),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
+
+As expected, this gives the same estimates as `fit_mpl_2`
+
+``` r
+all.equal(fit_mpl_2$fit$fit$par,fit_mpl_5$fit$fit$par)
+```
+
+    ## [1] TRUE
+
+We can increase the penalty strength by increasing `tau`
+
+``` r
+fit_mpl_6<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,tau=list(0.5)),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
+
+As expected, this pools the estimated random effects covariance matrix
+closer to the shrinkage target ($3q\mathbf{I}_q$).
+
+``` r
+VarCorr(fit_mpl_5$fit)$cond$grouping1[1:2,1:2]
+```
+
+    ##               Z1(Intercept) Z1migration
+    ## Z1(Intercept)      0.142015  -0.1342470
+    ## Z1migration       -0.134247   0.7759756
+
+``` r
+VarCorr(fit_mpl_6$fit)$cond$grouping1[1:2,1:2]
+```
+
+    ##               Z1(Intercept) Z1migration
+    ## Z1(Intercept)    0.43257077 -0.07874029
+    ## Z1migration     -0.07874029  0.83889943
+
+We can also apply penalties to both random effects, and control their
+strength via `tau`. For example,
+
+``` r
+fit_mpl_7<-AUGglmmTMB(parasites~migration+food+(migration|phylogenetic)+(1|species),data=birds,link = "logit",
+                penOpt = AUGglmmTMBPenalty(autrepen =FALSE,tau=list(0.5,0.8)),
+                      control=AUGglmmTMBControl(fit_pGLM = FALSE,maxiter = 50,tol=1e-5,save_coef=TRUE)   )
+```
+
+``` r
+summary(fit_mpl_7$fit)
+```
+
+    ##  Family: binomial  ( logit )
+    ## Formula:          
+    ## cbind(Y, M - Y) ~ -1 + X + (-1 + Z1 | grouping1) + (-1 + Z2 |      grouping2)
+    ## Data: xdfa
+    ## 
+    ##       AIC       BIC    logLik -2*log(L)  df.resid 
+    ##        NA        NA        NA        NA       369 
+    ## 
+    ## Random effects:
+    ## 
+    ## Conditional model:
+    ##  Groups    Name          Variance Std.Dev. Corr  
+    ##  grouping1 Z1(Intercept) 0.4320   0.6573         
+    ##            Z1migration   0.8383   0.9156   -0.13 
+    ##  grouping2 Z2            0.6186   0.7865         
+    ## Number of obs: 378, groups:  grouping1, 14; grouping2, 48
+    ## 
+    ## Conditional model:
+    ##              Estimate Std. Error z value Pr(>|z|)    
+    ## X(Intercept) -2.22357    0.63450  -3.504 0.000458 ***
+    ## Xmigration   -1.34128    1.39673  -0.960 0.336904    
+    ## Xfoods       -0.74180    3.33873  -0.222 0.824174    
+    ## Xfoodv        2.22531    1.69220   1.315 0.188496    
+    ## Xfoodz       -0.03862    0.61716  -0.063 0.950103    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1

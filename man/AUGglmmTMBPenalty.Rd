@@ -9,6 +9,7 @@ AUGglmmTMBPenalty(
   autrepen = FALSE,
   nu = NULL,
   psi = NULL,
+  tau = NULL,
   plot = FALSE,
   ntaus = 50
 )
@@ -26,6 +27,8 @@ When \code{TRUE}, the penalty is only applied to the 1st random effect.}
 
 \item{psi}{Optional list of random-effects penalty matrices. Ignored when \code{autrepen=TRUE}. Ignored when \code{nu=NULL}; when \code{nu} is not \code{NULL}, \code{psi} has to be the list of the same length as \code{nu} containing matrices of appropriate dimensions. Default is \code{NULL}.}
 
+\item{tau}{Optional list of penalty parameters. Ignored when \code{autrepen=TRUE} and when \code{nu} is not null. When specified, this has to be the list of numeric values in [0,1]; the list can be of the same length as the number of specified random effects in which case the penalty is applied to all random effects; when shorter, the penalty is applied only to the first \code{length(tau)} random effects. Default is \code{NULL}.}
+
 \item{plot}{Logical; when \code{TRUE} the conditional likelihood by \eqn{\tau} is plotted. Ignored when \code{autrepen=FALSE}. When \code{TRUE}, the computation time can be substantially increased. Default is \code{FALSE}.}
 
 \item{ntaus}{Numeric, number of different values of \eqn{\tau} to be used when plotting the conditional likelihood. Ignored when \code{plot=FALSE}. Using a large value can substantially increase the computation time. Default is \code{50}.}
@@ -40,7 +43,7 @@ Constructs a list of penalty parameters to be used with \code{\link{AUGglmmTMB}}
 This function does not perform any fitting itself. It simply returns a structured list
 that specifies how \code{\link{AUGglmmTMB}} should apply penalties to fixed and random effects.
 Use this function to easily create the \code{penOpt} argument for \code{\link{AUGglmmTMB}}.
-Setting \code{autrepen=FALSE} and \code{nu=NULL} turns off the penalty on the random effects covariance matrices.
+Setting \code{autrepen=FALSE}, \code{nu=NULL}, and \code{tau=NULL} turns off the penalty on the random effects covariance matrices.
 }
 \examples{
 # Default penalty on the fixed effects, no penalty on the random effects
