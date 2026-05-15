@@ -1045,22 +1045,53 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
   }
 
 
+  get_d_mu <- switch(link_fun,
+                             logit = function(x,y) {
+                               rep(1,length(x))
+                             },
 
+                             probit = function(x,y) {
+                               y[y<1e-12]<-1e-12
+                               y[y>(1-1e-12)]<-1-1e-12
+                               dnorm(x)/(y*(1-y))
+                               },
+
+                             cloglog = function(x,y) {
+                               y[y<1e-12]<-1e-12
+                               y[y>(1-1e-12)]<-1-1e-12
+                               exp(x-exp(x))/(y*(1-y))
+                             },
+
+                             loglog = function(x,y) {
+                               y[y<1e-12]<-1e-12
+                               y[y>(1-1e-12)]<-1-1e-12
+                               exp(-x-exp(-x))/(y*(1-y))
+                             },
+
+                             cauchit = function(x,y) {
+                               y[y<1e-12]<-1e-12
+                               y[y>(1-1e-12)]<-1-1e-12
+                               1 / (pi*(1+x**2))
+                             },
+
+                             stop("Unsupported link function")
+  )
 
 
   get_lim<-function(model,Y,X,M,W){
 
-
+    lp_hat<-predict(model,type="link")[1:length(Y)]
     p_hat<-predict(model,type="response")[1:length(Y)]
 
-    dl_deta<-W*(Y-p_hat*M)
+    d_mu<-get_d_mu(lp_hat,p_hat)
+    dl_deta<-W*(Y-p_hat*M)*d_mu
 
 
     grad_beta <- t(X) %*% dl_deta
 
 
     vcov_beta <- vcov(model)$cond
-    if (any(is.na(vcov_beta))) vcov_beta<-4*diag(1,ncol(X),ncol(X))
+    if (any(is.na(vcov_beta))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #this is only for logit (constant 4!)
     if (any(diag(vcov_beta<0))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #res from Kos
     sqrt(t(grad_beta)%*%vcov_beta%*%grad_beta)
 
@@ -1230,7 +1261,6 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
 #' @export
 
 get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol=1e-6,link_fun="logit",save_coef=FALSE,inter_iter=1e3,use_previous=FALSE){
-
   fit0<-mpl_fitter(data,cfe=cfe,nu=NULL,psi=NULL,fit_pGLM=fit_pGLM,method_pGLM=method_pGLM,maxiter=maxiter,tol=tol,link_fun=link_fun,save_coef = FALSE,use_previous=use_previous)
 
   D_est<-VarCorr(fit0$fit)$cond[[1]]
@@ -1253,24 +1283,59 @@ get_data_plot_cloglik<-function(data,cfe,nu,n_taus,fit_pGLM=FALSE,method_pGLM="b
 
 
 
+  get_d_mu <- switch(link_fun,
+                     logit = function(x,y) {
+                       rep(1,length(x))
+                     },
+
+                     probit = function(x,y) {
+                       y[y<1e-12]<-1e-12
+                       y[y>(1-1e-12)]<-1-1e-12
+                       dnorm(x)/(y*(1-y))
+                     },
+
+                     cloglog = function(x,y) {
+                       y[y<1e-12]<-1e-12
+                       y[y>(1-1e-12)]<-1-1e-12
+                       exp(x-exp(x))/(y*(1-y))
+                     },
+
+                     loglog = function(x,y) {
+                       y[y<1e-12]<-1e-12
+                       y[y>(1-1e-12)]<-1-1e-12
+                       exp(-x-exp(-x))/(y*(1-y))
+                     },
+
+                     cauchit = function(x,y) {
+                       y[y<1e-12]<-1e-12
+                       y[y>(1-1e-12)]<-1-1e-12
+                       1 / (pi*(1+x**2))
+                     },
+
+                     stop("Unsupported link function")
+  )
+
+
   get_lim<-function(model,Y,X,M,W){
 
-
+    lp_hat<-predict(model,type="link")[1:length(Y)]
     p_hat<-predict(model,type="response")[1:length(Y)]
 
-    dl_deta<-W*(Y-p_hat*M)
+    d_mu<-get_d_mu(lp_hat,p_hat)
+    dl_deta<-W*(Y-p_hat*M)*d_mu
 
 
     grad_beta <- t(X) %*% dl_deta
 
 
     vcov_beta <- vcov(model)$cond
-    if (any(is.na(vcov_beta))) vcov_beta<-4*diag(1,ncol(X),ncol(X))
-    if (any(diag(vcov_beta<0))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #res from Kos (does not use W and M!)
+    if (any(is.na(vcov_beta))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #this is only for logit (constant 4!)
+    if (any(diag(vcov_beta<0))) vcov_beta<-4*diag(1,ncol(X),ncol(X)) #res from Kos
     sqrt(t(grad_beta)%*%vcov_beta%*%grad_beta)
 
 
   }
+
 
 
 
