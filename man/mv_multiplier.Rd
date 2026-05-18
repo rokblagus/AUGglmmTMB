@@ -4,11 +4,14 @@
 \alias{mv_multiplier}
 \title{Compute fixed-effects penalty strength}
 \usage{
-mv_multiplier(data)
+mv_multiplier(data, link = "logit")
 }
 \arguments{
 \item{data}{A list containing the model data. Must include the element
 \code{X} for the fixed effects design matrix. Optionally it also includes \code{M} for the number of trials and  \code{W} for the weights; if missing they are set to 1 internally for all observations.}
+
+\item{link}{Character. Link function to use for the binomial response. Default is
+\code{"logit"}.}
 }
 \value{
 A numeric value equal to \eqn{\sqrt{p/n}}, where \eqn{p} is the number

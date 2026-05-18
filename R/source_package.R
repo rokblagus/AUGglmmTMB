@@ -26,6 +26,8 @@
 #'
 #' @param data A list containing the model data. Must include the element
 #' \code{X} for the fixed effects design matrix. Optionally it also includes \code{M} for the number of trials and  \code{W} for the weights; if missing they are set to 1 internally for all observations.
+#' @param link Character. Link function to use for the binomial response. Default is
+#'   \code{"logit"}.
 #'
 #' @return A numeric value equal to \eqn{\sqrt{p/n}}, where \eqn{p} is the number
 #' of fixed-effect parameters and \eqn{n} is the effective sample size.
@@ -51,17 +53,84 @@
 #'
 #' @export
 
-
-mv_multiplier <- function(data) {
-  if (is.null(data$X)) stop("The suplied data are not in correct format, X is missing.")
+#this was not ok, it only makes sense for logit with W=M=1!
+#mv_multiplier <- function(data) {
+#  if (is.null(data$X)) stop("The suplied data are not in correct format, X is missing.")
  # if (is.null(data$M)|is.null(data$W)) stop("The suplied data are not in correct format.")
-  if (is.null(data$M)) data$M<-rep(1,nrow(data$X))
-  if (is.null(data$W)) data$W<-rep(1,nrow(data$X))
+ # if (is.null(data$M)) data$M<-rep(1,nrow(data$X))
+  #if (is.null(data$W)) data$W<-rep(1,nrow(data$X))
 
-  n <- sum(data$M*data$W)
-  p <- ncol(data$X)
-  return( sqrt(p / n))
+  #n <- sum(data$M*data$W)
+  #p <- ncol(data$X)
+  #return( sqrt(p / n))
+#}
+
+#new idea
+#mv_multiplier <- function(data,link) {
+
+ # if (is.null(data$X)) stop("The suplied data are not in correct format, X is missing.")
+#  if (is.null(data$M)) data$M<-rep(1,nrow(data$X))
+#  if (is.null(data$W)) data$W<-rep(1,nrow(data$X))
+
+#  w0 <- switch(
+#    link_fun,
+#    logit = 1/4,
+#    probit = 1/pi,
+#    cloglog = 1/(exp(1) - 1),
+#    loglog = 1/(exp(1) - 1),
+#    cauchit = 4/pi^2,
+#    stop("Unknown link_fun. Must be one of: logit, probit, cloglog, loglog, cauchit.")
+#  )
+# W<-diag(data$W)
+# M<-diag(data$W*data$M)
+#  return( 1/2*sqrt(  sum(diag(  W%*%data$X%*%solve(t(data$X)%*%M%*%data$X)%*%t(data$X)  ))/(sum(data$W)*w0)  )  )
+
+
+#}
+
+#faster/more stable??
+mv_multiplier <- function(data,link="logit") {
+
+if (is.null(data$X)) stop("The supplied data are not in correct format, X is missing.")
+
+n <- nrow(data$X)
+
+if (is.null(data$M)) data$M <- rep(1, n)
+if (is.null(data$W)) data$W <- rep(1, n)
+
+w0 <- switch(
+  link,
+  logit = 1/4,
+  probit = 1/pi,
+  cloglog = 1/(exp(1) - 1),
+  loglog = 1/(exp(1) - 1),
+  cauchit = 4/pi^2,
+  stop("Unknown link function. Must be one of: logit, probit, cloglog, loglog, cauchit.")
+)
+
+X <- data$X
+W <- data$W
+M <- data$M
+
+# weighted crossproducts (NO diag matrices)
+XtW  <- crossprod(X, X * W)   # X' W X
+XtM  <- crossprod(X, X * (W * M))  # X' M X (since M~W*M in your code)
+
+# Cholesky-based inverse action
+R <- chol(XtM)
+
+# compute A = (X' M X)^(-1) (X' W X)
+A <- backsolve(R, forwardsolve(t(R), XtW))
+
+trace_val <- sum(diag(A))
+
+result <- 0.5 * sqrt(trace_val / (sum(W) * w0))
+
+return(result)
+
 }
+
+
 
 #' Construct model formula from data list
 #'
@@ -1736,7 +1805,7 @@ if (!is.null(penOpt$tau)) {if (any(penOpt$tau<0)|any(penOpt$tau>1)) stop("The pa
 
   data_mpl<-namedList(Y,M,W,X,Z,grouping)
 
-  if (is.null(penOpt$cfe)) penOpt$cfe<-mv_multiplier(data_mpl)
+  if (is.null(penOpt$cfe)) penOpt$cfe<-mv_multiplier(data_mpl,link_fun)
 
   if (penOpt$autrepen){
     q<-ncol(data_mpl$Z[[1]])
