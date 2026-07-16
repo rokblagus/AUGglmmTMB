@@ -114,7 +114,7 @@ M <- data$M
 
 # weighted crossproducts (NO diag matrices)
 XtW  <- crossprod(X, X * W)   # X' W X
-XtM  <- crossprod(X, X * (W * M))  # X' M X (since M~W*M in your code)
+XtM  <- crossprod(X, X * (W * M))  # X' WM X
 
 # Cholesky-based inverse action
 R <- chol(XtM)
