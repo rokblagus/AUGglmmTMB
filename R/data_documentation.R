@@ -12,8 +12,8 @@
 #'   \item{id}{Unique identifier for each bird (integer).}
 #'   \item{parasites}{Binary outcome indicating presence (1) or absence (0) of intestinal parasites.}
 #'   \item{phylogenetic}{Phylogenetic classification (factor) of the bird. There are 8 clusters ranging from 1 to 158 birds per cluster.}
-#'   \item{migration}{Migratory behavior (factor) with levels "migratory" (0) and "non-migratory" (1). 298 migratory and 68 non-migratory birds.}
-#'   \item{food}{Diet type (factor) with levels "granivorous" (s), "mixed" (m), "omnivorous" (v), and "insectivorous" (z). 13, 211, 25, and 117 birds, respectively.}
+#'   \item{migration}{Migratory behavior (factor) with levels 0 ("migratory") and 1 ("non-migratory"). 298 migratory and 68 non-migratory birds.}
+#'   \item{food}{Diet type (factor) with levels  s ("granivorous"), m ("mixed"), v ("omnivorous"), and z ("insectivorous"). 13, 211, 25, and 117 birds, respectively.}
 #'   \item{species}{Species identifier (factor), nested within the phylogenetic classification. 42 species clusters ranging from 1 to 56 birds per cluster.}
 #' }
 #'
