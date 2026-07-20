@@ -1228,9 +1228,13 @@ get_psi<-function(data,cfe,nu,fit_pGLM=FALSE,method_pGLM="brglm2",maxiter=50,tol
     }
   } else {
     if ((-opti$objective-lik0)<lim) opt_tau<-opti$minimum else {
-      uni<-  uniroot(tau_finder,lower=tol_min,upper = opti$minimum)
-      opt_tau<-uni$root
-    }
+      uni<-  try(uniroot(tau_finder,lower=tol_min,upper = opti$minimum),silent=TRUE)
+      if (inherits(uni, "try-error")) {
+        opt_tau <- tol_min
+      } else {
+        opt_tau <- uni$root
+      }
+      }
   }
   if (opt_tau>(1-tol_max)) opt_tau<-1-tol_max
   if (opt_tau<tol_min) opt_tau<-tol_min
